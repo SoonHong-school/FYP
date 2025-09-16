@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Agent Dashboard | AutoCareMatch</title>
+    <link rel="stylesheet" href="assets/css/AgentService.css">
+
+    <!-- FullCalendar CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet" />
+
+    <!-- EmailJS v4 -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script>
+        (function () {
+            emailjs.init("mSpVdps_1ueQSCGZd"); // ✅ your Public Key
+        })();
+    </script>
+
+    <style>
+        /* Styling for dropdown */
+        .status-dropdown {
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .status-dropdown option[value="pending"] {
+            color: gray;
+        }
+
+        .status-dropdown option[value="accepted"] {
+            color: green;
+        }
+
+        .status-dropdown option[value="in_progress"] {
+            color: orange;
+        }
+
+        .status-dropdown option[value="done"] {
+            color: blue;
+        }
+
+        /* History section */
+        #historySection {
+            margin-top: 40px;
+        }
+
+        #historySection table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        #historySection th,
+        #historySection td {
+            padding: 8px;
+            border: 1px solid #ddd;
+        }
+
+        #historySection th {
+            background: #f4f4f4;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="logo">AutoCareMatch</div>
+        <div class="hamburger" id="hamburger">&#9776;</div>
+        <ul class="nav-menu" id="nav-menu">
+            <li><a href="AgentHome.html">Homepage</a></li>
+            <li><a href="AgentService.html">Car Service</a></li>
+            <li><a href="AgentTestDrive.html">Test Drive</a></li>
+            <li><a href="AgentProfile.html">Profile</a></li>
+            <li><a href="#" onclick="logout()">Logout</a></li>
+        </ul>
+    </nav>
+
+    <!-- Dashboard -->
+    <div class="container">
+        <h1>Agent Dashboard</h1>
+        <h2>Your Appointments Calendar</h2>
+
+        <!-- Calendar -->
+        <div id="calendar"></div>
+
+        <!-- Appointment List for Selected Date -->
+        <h3 id="selectedDateTitle">Appointments on: (Click a date)</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Car Type</th>
+                    <th>Model</th>
+                    <th>Plate</th>
+                    <th>Phone</th>
+                    <th>Service Type</th>
+                    <th>Time</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="appointmentsTableBody">
+                <tr>
+                    <td colspan="7">Select a date to view appointments.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- History Section -->
+        <div id="historySection">
+            <h3>Completed Appointments (History)</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Car Type</th>
+                        <th>Model</th>
+                        <th>Plate</th>
+                        <th>Phone</th>
+                        <th>Service Type</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="historyTableBody">
+                    <tr>
+                        <td colspan="7">No completed appointments yet.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>© 2025 AutoCareMatch | Agent Dashboard</p>
+    </footer>
+
+    <!-- Firebase + FullCalendar -->
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+        import { getFirestore, collection, query, where, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyD882u-zk7FB3YMwL0Nm3_VYD4xsCMt6cQ",
+            authDomain: "carlisting-f88f2.firebaseapp.com",
+            projectId: "carlisting-f88f2",
+            storageBucket: "carlisting-f88f2.appspot.com",
+            messagingSenderId: "49221518207",
+            appId: "1:49221518207:web:c5e2fd962b802322bfd04a",
+            measurementId: "G-EMFC5Q8FZ5"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let allAppointments = [];
+
+        // ====== INIT CALENDAR ======
+        function initCalendar(events) {
+            const calendarEl = document.getElementById("calendar");
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: "dayGridMonth",
+                selectable: true,
+                events: events,
+                dateClick: function (info) {
+                    showAppointmentsByDate(info.dateStr);
+                }
+            });
+            calendar.render();
+        }
+
+        // ====== SHOW APPOINTMENTS FOR SELECTED DATE ======
+        function showAppointmentsByDate(dateStr) {
+            const tableBody = document.getElementById("appointmentsTableBody");
+            const selectedDateTitle = document.getElementById("selectedDateTitle");
+            selectedDateTitle.textContent = "Appointments on: " + dateStr;
+
+            const filtered = allAppointments.filter(app => app.serviceDate === dateStr && app.status !== "done");
+            tableBody.innerHTML = "";
+
+            if (filtered.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="7">No appointments on this day.</td></tr>`;
+                return;
+            }
+
+            filtered.forEach((data) => {
+                const row = document.createElement("tr");
+
+                row.innerHTML = `
+          <td>${data.carType?.toUpperCase() || "-"}</td>
+          <td>${data.carModel || "-"}</td>
+          <td>${data.carNumber || "-"}</td>
+          <td>${data.phoneNumber || "-"}</td>
+          <td>${data.serviceType || "-"}</td>
+          <td>${data.serviceTime || "-"}</td>
+          <td>
+            <select class="status-dropdown" data-id="${data.id}" data-email="${data.userEmail}" data-name="${data.customerName || "Customer"}">
+              <option value="pending" ${data.status === "pending" ? "selected" : ""}>Pending</option>
+              <option value="accepted" ${data.status === "accepted" ? "selected" : ""}>Accepted</option>
+              <option value="declined" ${data.status === "declined" ? "selected" : ""}>Declined</option>
+              <option value="in_progress" ${data.status === "in_progress" ? "selected" : ""}>In Progress</option>
+              <option value="done" ${data.status === "done" ? "selected" : ""}>Done</option>
+            </select>
+          </td>
+        `;
+
+                // Dropdown change event → confirm, update Firestore, send email
+                row.querySelector(".status-dropdown").addEventListener("change", async (e) => {
+                    const newStatus = e.target.value;
+                    const docId = e.target.getAttribute("data-id");
+                    const userEmail = e.target.getAttribute("data-email");
+                    const userName = e.target.getAttribute("data-name");
+
+                    const confirmed = confirm(`Are you sure you want to change status to "${newStatus}" and notify the user?`);
+                    if (!confirmed) {
+                        e.target.value = data.status; // reset if cancelled
+                        return;
+                    }
+
+                    try {
+                        // 1. Update Firestore
+                        await updateDoc(doc(db, "carServiceAppointments", docId), { status: newStatus });
+                        console.log(`Status updated to ${newStatus}`);
+                        data.status = newStatus;
+
+                        // 2. Send email via EmailJS
+                        const templateParams = {
+                            to_email: userEmail,
+                            to_name: userName,
+                            status: newStatus,
+                            service_type: data.serviceType,
+                            car_model: data.carModel,
+                            appointment_date: data.serviceDate,
+                            appointment_time: data.serviceTime
+                        };
+
+                        await emailjs.send("service_ryw5n69", "template_gqxt9kr", templateParams);
+                        alert("Email sent to customer successfully.");
+
+                        // Refresh history if moved to "done"
+                        if (newStatus === "done") {
+                            populateHistory();
+                            showAppointmentsByDate(dateStr); // refresh table to hide it
+                        }
+                    } catch (err) {
+                        console.error("Error updating status or sending email:", err);
+                        alert("Failed to update status or send email.");
+                    }
+                });
+
+                tableBody.appendChild(row);
+            });
+        }
+
+        // ====== POPULATE HISTORY ======
+        function populateHistory() {
+            const historyBody = document.getElementById("historyTableBody");
+            let historyAppointments = allAppointments.filter(app =>
+                app.status === "done" || app.status === "declined"
+            );
+
+            // ✅ Sort by date + time (most recent first)
+            historyAppointments.sort((a, b) => {
+                const dateA = new Date(`${a.serviceDate}T${a.serviceTime}`);
+                const dateB = new Date(`${b.serviceDate}T${b.serviceTime}`);
+                return dateB - dateA; // descending order
+            });
+
+            historyBody.innerHTML = "";
+
+            if (historyAppointments.length === 0) {
+                historyBody.innerHTML = `<tr><td colspan="8">No completed or declined appointments yet.</td></tr>`;
+                return;
+            }
+
+            historyAppointments.forEach((data) => {
+                let statusColor = "";
+                if (data.status === "done") statusColor = "green";
+                if (data.status === "declined") statusColor = "red";
+
+                const row = document.createElement("tr");
+                row.innerHTML = `
+            <td>${data.carType?.toUpperCase() || "-"}</td>
+            <td>${data.carModel || "-"}</td>
+            <td>${data.carNumber || "-"}</td>
+            <td>${data.phoneNumber || "-"}</td>
+            <td>${data.serviceType || "-"}</td>
+            <td>${data.serviceDate || "-"}</td>
+            <td>${data.serviceTime || "-"}</td>
+            <td style="font-weight:bold; color:${statusColor}; text-transform:capitalize;">
+                ${data.status}
+            </td>
+        `;
+                historyBody.appendChild(row);
+            });
+        }
+
+
+
+        // ====== AUTO UPDATE TO IN PROGRESS ======
+        function autoUpdateStatuses() {
+            const now = new Date();
+            allAppointments.forEach(async (app) => {
+                if (app.status === "accepted") {
+                    const appointmentDateTime = new Date(`${app.serviceDate}T${app.serviceTime}`);
+                    if (now >= appointmentDateTime && now < new Date(appointmentDateTime.getTime() + 60 * 60 * 1000)) {
+                        try {
+                            await updateDoc(doc(db, "carServiceAppointments", app.id), { status: "in_progress" });
+                            app.status = "in_progress";
+                        } catch (err) {
+                            console.error("Error auto-updating status:", err);
+                        }
+                    }
+                }
+            });
+        }
+        setInterval(autoUpdateStatuses, 60 * 1000);
+
+        // ====== FETCH APPOINTMENTS ======
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const agentId = user.uid;
+                const appointmentsRef = collection(db, "carServiceAppointments");
+                const q = query(appointmentsRef, where("agentId", "==", agentId));
+                const querySnapshot = await getDocs(q);
+
+                allAppointments = [];
+                const events = [];
+
+                querySnapshot.forEach((docSnap) => {
+                    const data = { id: docSnap.id, ...docSnap.data() };
+                    allAppointments.push(data);
+
+                    if (data.serviceDate) {
+                        events.push({
+                            title: data.serviceType || "Appointment",
+                            start: data.serviceDate,
+                            allDay: true
+                        });
+                    }
+                });
+
+                initCalendar(events);
+                populateHistory();
+            } else {
+                alert("Please log in as agent first.");
+                window.location.href = "Login.html";
+            }
+        });
+
+        // ====== LOGOUT ======
+        window.logout = async function () {
+            await signOut(auth);
+            window.location.href = "Login.html";
+        }
+    </script>
+</body>
+
+</html>

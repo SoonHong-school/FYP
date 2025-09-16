@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Agent Dashboard | AutoCareMatch</title>
+  <link rel="stylesheet" href="assets/css/AgentHome.css">
+
+  <!-- FullCalendar -->
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet" />
+</head>
+<body>
+  <!-- Navbar -->
+    <nav class="navbar">
+        <div class="logo">AutoCareMatch</div>
+        <div class="hamburger" id="hamburger">&#9776;</div>
+        <ul class="nav-menu" id="nav-menu">
+            <li><a href="AgentHome.html">Homepage</a></li>
+            <li><a href="AgentService.html">Car Service</a></li>
+            <li><a href="AgentTestDrive.html">Test Drive</a></li>
+            <li><a href="AgentProfile.html">Profile</a></li>
+            <li><a href="#" onclick="logout()">Logout</a></li>
+        </ul>
+    </nav>
+
+  <!-- Dashboard Container -->
+  <div class="container">
+    <h1 id="welcomeTitle">Welcome Back, Agent</h1>
+    <p class="today-date" id="todayDate"></p>
+
+    <!-- Quick Stats -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <h2 id="todayAppointments">0</h2>
+        <p>Today's Appointments</p>
+      </div>
+      <div class="stat-card">
+        <h2 id="pendingAppointments">0</h2>
+        <p>Pending</p>
+      </div>
+      <div class="stat-card">
+        <h2 id="completedAppointments">0</h2>
+        <p>Completed</p>
+      </div>
+      <div class="stat-card">
+        <h2 id="canceledAppointments">0</h2>
+        <p>Canceled</p>
+      </div>
+    </div>
+
+    <!-- Upcoming Appointments -->
+    <div class="section">
+      <h2>Upcoming Appointments</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Car</th>
+            <th>Plate</th>
+            <th>Service</th>
+            <th>Customer Phone</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="upcomingTableBody">
+          <tr><td colspan="6">Loading upcoming appointments...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Calendar + Notifications -->
+    <div class="grid-2">
+      <!-- Calendar -->
+      <div class="section">
+        <h2>Calendar</h2>
+        <div id="calendar"></div>
+      </div>
+
+      <!-- Notifications -->
+      <div class="section">
+        <h2>Notifications</h2>
+        <ul id="notificationsList">
+          <li>No new notifications</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <p>© 2025 AutoCareMatch | Agent Dashboard</p>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    // ====== FIREBASE CONFIG ======
+    const firebaseConfig = {
+      apiKey: "AIzaSyD882u-zk7FB3YMwL0Nm3_VYD4xsCMt6cQ",
+      authDomain: "carlisting-f88f2.firebaseapp.com",
+      projectId: "carlisting-f88f2",
+      storageBucket: "carlisting-f88f2.appspot.com",
+      messagingSenderId: "49221518207",
+      appId: "1:49221518207:web:c5e2fd962b802322bfd04a",
+      measurementId: "G-EMFC5Q8FZ5"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let allAppointments = [];
+
+    // ====== INIT CALENDAR ======
+    function initCalendar(events) {
+      const calendarEl = document.getElementById("calendar");
+      const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: "dayGridMonth",
+        events: events
+      });
+      calendar.render();
+    }
+
+    // ====== FETCH APPOINTMENTS ======
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        document.getElementById("welcomeTitle").textContent = `Welcome Back, ${user.email}`;
+        document.getElementById("todayDate").textContent = new Date().toDateString();
+
+        const agentId = user.uid;
+        const appointmentsRef = collection(db, "carServiceAppointments");
+        const q = query(appointmentsRef, where("agentId", "==", agentId));
+        const querySnapshot = await getDocs(q);
+
+        allAppointments = [];
+        const events = [];
+        const todayStr = new Date().toISOString().split("T")[0];
+
+        let todayCount = 0, pendingCount = 0, completedCount = 0, canceledCount = 0;
+
+        const upcomingBody = document.getElementById("upcomingTableBody");
+        upcomingBody.innerHTML = "";
+
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          allAppointments.push(data);
+
+          // Stats
+          if (data.serviceDate === todayStr) todayCount++;
+          if (data.status === "pending") pendingCount++;
+          if (data.status === "done") completedCount++;
+          if (data.status === "declined") canceledCount++;
+
+          // Upcoming
+          if (data.status === "accepted") {
+            const row = `
+                <tr>
+                <td>${data.serviceTime || "-"}</td>
+                <td>${data.carModel || "-"}</td>
+                <td>${data.carNumber || "-"}</td>
+                <td>${data.serviceType || "-"}</td>
+                <td>${data.phoneNumber || "-"}</td>
+                <td class="status ${data.status}">${data.status}</td>
+                </tr>
+            `;
+            upcomingBody.innerHTML += row;
+            
+
+          // Calendar
+          if (data.serviceDate) {
+            events.push({
+              title: data.serviceType || "Appointment",
+              start: data.serviceDate,
+              allDay: true
+            });
+          }
+        }
+        });
+
+        // Update Stats
+        document.getElementById("todayAppointments").textContent = todayCount;
+        document.getElementById("pendingAppointments").textContent = pendingCount;
+        document.getElementById("completedAppointments").textContent = completedCount;
+        document.getElementById("canceledAppointments").textContent = canceledCount;
+
+        // Calendar
+        initCalendar(events);
+
+        // Notifications
+        const notificationsList = document.getElementById("notificationsList");
+        notificationsList.innerHTML = "";
+        if (allAppointments.length === 0) {
+          notificationsList.innerHTML = "<li>No new notifications</li>";
+        } else {
+          allAppointments.slice(0, 5).forEach(app => {
+            const li = document.createElement("li");
+            li.textContent = `New: ${app.serviceType} on ${app.serviceDate} at ${app.serviceTime}`;
+            notificationsList.appendChild(li);
+          });
+        }
+
+      } else {
+        alert("Please log in as agent first.");
+        window.location.href = "Login.html";
+      }
+    });
+
+    // ====== LOGOUT ======
+    window.logout = async function() {
+      await signOut(auth);
+      window.location.href = "Login.html";
+    }
+  </script>
+</body>
+</html>

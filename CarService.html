@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Car Service Appointment | AutoCareMatch</title>
+    <!-- Shared Styles -->
+    <link rel="stylesheet" href="assets/css/Login.css">
+    <!-- Page-specific styles -->
+    <link rel="stylesheet" href="assets/css/CarService.css">
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <div id="navbar"></div>
+
+    <!-- Car Service Appointment Section -->
+    <section class="service-section">
+        <div class="service-card">
+            <h2>Book Car Service</h2>
+            <form id="carServiceForm">
+
+                <!-- Car Type -->
+                <label for="carType">Car Type</label>
+                <select id="carType" required>
+                    <option value="">-- Select Car Type --</option>
+                    <option value="petrol">Petrol Car</option>
+                    <option value="ev">EV Car</option>
+                </select>
+
+                <!-- Car Model -->
+                <label for="carModel">Car Model</label>
+                <input type="text" id="carModel" placeholder="Enter your car model" required>
+
+                <!-- Car Number Plate -->
+                <label for="carNumber">Car Number Plate</label>
+                <input type="text" id="carNumber" placeholder="Enter your car number plate" required>
+
+                <!-- Phone Number -->
+                <label for="phoneNumber">Phone Number</label>
+                <input type="tel" id="phoneNumber" placeholder="0123456789" pattern="[0-9]{10,11}" required>
+
+                <!-- Service Type -->
+                <label for="serviceType">Service Type</label>
+                <select id="serviceType" required>
+                    <option value="">-- Select Service Type --</option>
+                </select>
+
+                <!-- Preferred Date -->
+                <label for="serviceDate">Preferred Date</label>
+                <input type="date" id="serviceDate" required>
+
+                <!-- Preferred Time -->
+                <label for="serviceTime">Preferred Time</label>
+                <select id="serviceTime" required>
+                    <option value="">-- Select Time Slot --</option>
+                </select>
+
+                <button type="submit">Check Available Agents</button>
+                <p id="serviceMessage" class="msg"></p>
+            </form>
+        </div>
+    </section>
+
+    <!-- Available Agents Section -->
+    <section class="agents-section" id="agentsSection" style="display: none;">
+        <div class="agents-card">
+            <h2>Available Agents</h2>
+            <div id="agentsList" class="agents-list"></div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>© 2025 AutoCareMatch | All Rights Reserved</p>
+    </footer>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+        import { getFirestore, collection, query, where, getDocs, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        // ====== FIREBASE CONFIG ======
+        const firebaseConfig = {
+            apiKey: "AIzaSyD882u-zk7FB3YMwL0Nm3_VYD4xsCMt6cQ",
+            authDomain: "carlisting-f88f2.firebaseapp.com",
+            projectId: "carlisting-f88f2",
+            storageBucket: "carlisting-f88f2.appspot.com",
+            messagingSenderId: "49221518207",
+            appId: "1:49221518207:web:c5e2fd962b802322bfd04a",
+            measurementId: "G-EMFC5Q8FZ5"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // ====== NAVBAR LOAD ======
+        fetch("Navbar.html")
+            .then(res => res.text())
+            .then(data => {
+                document.getElementById("navbar").innerHTML = data;
+                const hamburger = document.getElementById("hamburger");
+                const navMenu = document.getElementById("nav-menu");
+                if (hamburger && navMenu) {
+                    hamburger.addEventListener("click", () => {
+                        navMenu.classList.toggle("active");
+                        hamburger.innerHTML = navMenu.classList.contains("active") ? "&times;" : "&#9776;";
+                    });
+                }
+            });
+
+        // ====== SERVICE OPTIONS BASED ON CAR TYPE ======
+        const carTypeSelect = document.getElementById("carType");
+        const serviceTypeSelect = document.getElementById("serviceType");
+
+        const petrolServices = [
+            { value: "maintenance", label: "General Maintenance" },
+            { value: "oilChange", label: "Oil Change" },
+            { value: "inspection", label: "Car Inspection" },
+            { value: "repair", label: "Repair" }
+        ];
+
+        const evServices = [
+            { value: "batteryCheck", label: "Battery Check" },
+            { value: "softwareUpdate", label: "Software Update" },
+            { value: "evInspection", label: "EV Inspection" },
+            { value: "chargerRepair", label: "Charger Repair" }
+        ];
+
+        carTypeSelect.addEventListener("change", () => {
+            serviceTypeSelect.innerHTML = '<option value="">-- Select Service Type --</option>';
+            const services = carTypeSelect.value === "ev" ? evServices : petrolServices;
+            services.forEach(service => {
+                const option = document.createElement("option");
+                option.value = service.value;
+                option.textContent = service.label;
+                serviceTypeSelect.appendChild(option);
+            });
+        });
+
+        // ====== DATE RESTRICTIONS ======
+        const serviceDateInput = document.getElementById("serviceDate");
+        const today = new Date();
+        today.setDate(today.getDate() + 1); // start from tomorrow
+        const minDate = today.toISOString().split("T")[0];
+        serviceDateInput.min = minDate;
+
+        // ====== TIME RESTRICTIONS ======
+        const serviceTimeSelect = document.getElementById("serviceTime");
+
+        // Generate slots 10:00 → 18:00
+        function generateTimeSlots() {
+            serviceTimeSelect.innerHTML = '<option value="">-- Select Time Slot --</option>';
+            for (let hour = 10; hour <= 18; hour++) {
+                const timeStr = hour.toString().padStart(2, "0") + ":00";
+                const option = document.createElement("option");
+                option.value = timeStr;
+                option.textContent = timeStr;
+                serviceTimeSelect.appendChild(option);
+            }
+        }
+
+        // Generate slots when page loads
+        generateTimeSlots();
+
+
+        // ====== FORM HANDLING ======
+        document.getElementById("carServiceForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const carType = document.getElementById("carType").value;
+            const carModel = document.getElementById("carModel").value;
+            const carNumber = document.getElementById("carNumber").value;
+            const phoneNumber = document.getElementById("phoneNumber").value;
+            const serviceType = document.getElementById("serviceType").value;
+            const serviceDate = document.getElementById("serviceDate").value;
+            const serviceTime = document.getElementById("serviceTime").value;
+            const serviceMessage = document.getElementById("serviceMessage");
+            const agentsSection = document.getElementById("agentsSection");
+            const agentsList = document.getElementById("agentsList");
+
+            if (carType && carModel && carNumber && phoneNumber && serviceType && serviceDate && serviceTime) {
+                serviceMessage.textContent = "✅ Checking available agents...";
+                serviceMessage.style.color = "green";
+
+                try {
+                    // 1. Get all agents of this car type
+                    const q = query(
+                        collection(db, "users"),
+                        where("role", "==", "agent"),
+                        where("type", "==", carType)
+                    );
+                    const querySnapshot = await getDocs(q);
+
+                    if (querySnapshot.empty) {
+                        serviceMessage.textContent = "❌ No available agents for this car type.";
+                        serviceMessage.style.color = "red";
+                        agentsSection.style.display = "none";
+                        return;
+                    }
+
+                    // 2. Get all appointments for this date & time
+                    const bookedQuery = query(
+                        collection(db, "carServiceAppointments"),
+                        where("serviceDate", "==", serviceDate),
+                        where("serviceTime", "==", serviceTime)
+                    );
+                    const bookedSnapshot = await getDocs(bookedQuery);
+
+                    // Build a set of booked agent IDs
+                    const bookedAgents = new Set();
+                    bookedSnapshot.forEach(doc => {
+                        bookedAgents.add(doc.data().agentId);
+                    });
+
+                    // 3. Display only agents NOT booked
+                    agentsList.innerHTML = "";
+                    let availableCount = 0;
+
+                    querySnapshot.forEach(doc => {
+                        const agent = doc.data();
+                        if (!bookedAgents.has(doc.id)) {
+                            availableCount++;
+                            const div = document.createElement("div");
+                            div.className = "agent-card";
+                            div.innerHTML = `
+            <h3>${agent.name || "Unnamed Agent"}</h3>
+            <p><strong>Specialty:</strong> ${agent.specialty || "General Service"}</p>
+            <p><strong>Type:</strong> ${agent.type.toUpperCase()}</p>
+            <button class="book-btn">Book with ${agent.name || "Agent"}</button>
+          `;
+
+                            // Handle booking
+                            div.querySelector(".book-btn").addEventListener("click", async () => {
+                                const user = auth.currentUser;
+                                if (!user) {
+                                    alert("⚠️ You must be logged in to book a service.");
+                                    return;
+                                }
+
+                                const userEmail = user.email || "no-email@unknown.com"; // fallback if no email
+
+                                try {
+                                    await addDoc(collection(db, "carServiceAppointments"), {
+                                        userId: user.uid,
+                                        userEmail: userEmail,
+                                        phoneNumber,
+                                        carType,
+                                        carModel,
+                                        carNumber,
+                                        serviceType,
+                                        serviceDate,
+                                        serviceTime,
+                                        agentId: doc.id,
+                                        agentName: agent.name,
+                                        agentType: agent.type,
+                                        createdAt: serverTimestamp(),
+                                        status: "pending"
+                                    });
+                                    alert(`✅ Appointment booked with ${agent.name}!`);
+                                } catch (err) {
+                                    console.error("Error saving appointment:", err);
+                                    alert("❌ Failed to save appointment: " + err.message);
+                                }
+                            });
+
+                            agentsList.appendChild(div);
+                        }
+                    });
+
+                    if (availableCount === 0) {
+                        serviceMessage.textContent = "❌ No agents available at this date & time.";
+                        serviceMessage.style.color = "red";
+                        agentsSection.style.display = "none";
+                    } else {
+                        agentsSection.style.display = "block";
+                        serviceMessage.textContent = "";
+                    }
+
+                } catch (err) {
+                    console.error("Error fetching agents:", err);
+                    serviceMessage.textContent = "❌ Failed to load agents.";
+                    serviceMessage.style.color = "red";
+                }
+            } else {
+                serviceMessage.textContent = "❌ Please fill in all fields.";
+                serviceMessage.style.color = "red";
+            }
+        });
+
+    </script>
+</body>
+
+</html>

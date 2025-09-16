@@ -1,0 +1,264 @@
+/* General page theme */
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #1a1a1a, #333);
+  color: #ffffff;
+  min-height: 100vh;
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #222;
+  color: #fff;
+  padding: 10px 20px;
+}
+.navbar .logo {
+  font-size: 1.5em;
+  font-weight: bold;
+}
+.nav-menu {
+  list-style: none;
+  display: flex;
+  gap: 20px;
+}
+.nav-menu li a {
+  text-decoration: none;
+  color: #fff;
+  transition: color 0.3s;
+}
+.nav-menu li a:hover {
+  color: #f0a500;
+}
+.hamburger {
+  display: none;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .nav-menu {
+    display: none;
+    flex-direction: column;
+    background: #222;
+    position: absolute;
+    top: 60px;
+    right: 20px;
+    padding: 10px;
+    border-radius: 5px;
+  }
+  .nav-menu.active {
+    display: flex;
+  }
+  .hamburger {
+    display: block;
+  }
+}
+
+/* Navbar */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #000000;
+  padding: 15px 30px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+}
+
+.navbar h2 {
+  margin: 0;
+  color: #ffffff;
+}
+
+.navbar .nav-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.navbar a {
+  text-decoration: none;
+  color: #ffffff;
+  padding: 8px 15px;
+  border-radius: 6px;
+  transition: background 0.3s;
+}
+
+.navbar a:hover,
+.navbar a.active {
+  background: #444;
+}
+
+.logout-btn {
+  background: #e63946;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.logout-btn:hover {
+  background: #c72b38;
+}
+
+/* Container */
+.container {
+  margin: 30px auto;
+  width: 90%;
+  max-width: 1000px;
+  background: #222;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+}
+
+/* Headings */
+.container h1, .container h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #ffffff;
+}
+
+/* Table styling */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #2e2e2e;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+table th, table td {
+  padding: 12px 15px;
+  text-align: center;
+}
+
+table th {
+  background: #111;
+  color: #ffffff;
+}
+
+table tr:nth-child(even) {
+  background: #3a3a3a;
+}
+
+table tr:nth-child(odd) {
+  background: #2a2a2a;
+}
+
+table td {
+  color: #ddd;
+}
+
+/* Status styling */
+.status.pending {
+  color: orange;
+  font-weight: bold;
+}
+
+.status.completed {
+  color: lightgreen;
+  font-weight: bold;
+}
+
+.status.declined {
+  color: red;
+  font-weight: bold;
+}
+
+/* Status dropdown styling */
+.status-dropdown {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  font-weight: 500;
+  background-color: #f9f9f9;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.status-dropdown:hover {
+  border-color: #007bff;
+  box-shadow: 0 0 6px rgba(0, 123, 255, 0.4);
+}
+
+/* Different colors for statuses */
+.status-dropdown option[value="pending"] {
+  background-color: #fff3cd;
+  color: #856404;
+  font-weight: bold;
+}
+
+.status-dropdown option[value="accepted"] {
+  background-color: #d4edda;
+  color: #155724;
+  font-weight: bold;
+}
+
+.status-dropdown option[value="in_progress"] {
+  background-color: #cce5ff;
+  color: #004085;
+  font-weight: bold;
+}
+
+.status-dropdown option[value="done"] {
+  background-color: #e2e3e5;
+  color: #383d41;
+  font-weight: bold;
+}
+
+.status-dropdown option[value="declined"] {
+  background-color: #fcbfbf;
+  color: #850000;
+  font-weight: bold;
+}
+
+/* History section */
+#historySection {
+    margin-top: 40px;
+}
+
+#historySection table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #1e1e1e !important;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+}
+
+#historySection th,
+#historySection td {
+    padding: 10px;
+    text-align: left;
+}
+
+#historySection th {
+    background: #111 !important;
+    color: #fff;
+    font-weight: bold;
+}
+
+#historySection td {
+    background: #2a2a2a !important;
+    color: #ffffff;
+    border-bottom: 1px solid #333;
+}
+
+/* Hover effect */
+#historySection tbody tr:hover td {
+    background: #333;
+}
+
+/* Empty row message */
+#historySection td[colspan="7"] {
+    text-align: center;
+    font-style: italic;
+    color: #ffffff;
+}
