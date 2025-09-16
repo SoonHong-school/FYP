@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User Profile | AutoCareMatch</title>
+  <link rel="stylesheet" href="assets/css/Navbar.css">
+  <link rel="stylesheet" href="assets/css/UserProfile.css">
+</head>
+<body>
+
+  <!-- Navbar -->
+  <div id="navbar"></div>
+
+  <!-- Profile Section -->
+  <section class="profile-section">
+    <div class="profile-card">
+      <h2>👤 User Profile</h2>
+
+      <div class="profile-info">
+        <p><strong>Name:</strong> <span id="profileName">Loading...</span></p>
+        <p><strong>Email:</strong> <span id="profileEmail">Loading...</span></p>
+        <p><strong>Role:</strong> <span id="profileRole">Loading...</span></p>
+        <p><strong>Joined:</strong> <span id="profileCreated">Loading...</span></p>
+      </div>
+
+      <hr>
+
+      <!-- Update Name -->
+      <h3>Update Name</h3>
+      <input type="text" id="newName" placeholder="Enter new name">
+      <button id="updateNameBtn">Update Name</button>
+      <p id="nameMsg" class="msg"></p>
+
+      <!-- Update Password -->
+      <h3>Update Password</h3>
+      <input type="password" id="newPassword" placeholder="Enter new password">
+      <button id="updatePasswordBtn">Update Password</button>
+      <p id="passMsg" class="msg"></p>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <p>© 2025 AutoCareMatch | All Rights Reserved</p>
+  </footer>
+
+  <!-- Firebase + Profile Script -->
+  <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { 
+    getAuth, 
+    onAuthStateChanged, 
+    updateProfile, 
+    updatePassword 
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { 
+    getFirestore, 
+    doc, 
+    getDoc, 
+    updateDoc 
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  import { loadNavbar } from "./assets/js/Navbar.js";
+
+  // Firebase Config
+  const firebaseConfig = {
+    apiKey: "AIzaSyD882u-zk7FB3YMwL0Nm3_VYD4xsCMt6cQ",
+    authDomain: "carlisting-f88f2.firebaseapp.com",
+    projectId: "carlisting-f88f2",
+    storageBucket: "carlisting-f88f2.appspot.com",
+    messagingSenderId: "49221518207",
+    appId: "1:49221518207:web:c5e2fd962b802322bfd04a",
+    measurementId: "G-EMFC5Q8FZ5"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  // ====== NAVBAR LOAD ======
+  fetch("Navbar.html")
+    .then(res => res.text())
+    .then(data => {
+      document.getElementById("navbar").innerHTML = data;
+      loadNavbar();
+    });
+
+  // ====== PROFILE ELEMENTS ======
+  const nameEl = document.getElementById("profileName");
+  const emailEl = document.getElementById("profileEmail");
+  const roleEl = document.getElementById("profileRole");
+  const createdEl = document.getElementById("profileCreated");
+
+  const nameMsg = document.getElementById("nameMsg");
+  const passMsg = document.getElementById("passMsg");
+
+  // ====== LOAD USER INFO ======
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      try {
+        // Show basic info from Firebase Auth
+        nameEl.textContent = user.displayName || "N/A";
+        emailEl.textContent = user.email;
+
+        // Load extra info from Firestore
+        const userDocRef = doc(db, "users", user.uid);
+        const userSnap = await getDoc(userDocRef);
+
+        if (userSnap.exists()) {
+          const data = userSnap.data();
+          roleEl.textContent = data.role || "user";
+
+          // Firestore Timestamp -> Date
+          if (data.createdAt?.toDate) {
+            createdEl.textContent = data.createdAt.toDate().toLocaleDateString();
+          } else {
+            createdEl.textContent = "N/A";
+          }
+        } else {
+          roleEl.textContent = "N/A";
+          createdEl.textContent = "N/A";
+        }
+      } catch (err) {
+        console.error("Error loading profile:", err);
+      }
+    } else {
+      // Not logged in → redirect to login page
+      window.location.href = "Login.html";
+    }
+  });
+
+  // ====== UPDATE NAME ======
+  document.getElementById("updateNameBtn").addEventListener("click", async () => {
+    const newName = document.getElementById("newName").value;
+    if (!newName) return;
+
+    try {
+      const user = auth.currentUser;
+      if (!user) throw new Error("No user signed in.");
+
+      await updateProfile(user, { displayName: newName });
+      await updateDoc(doc(db, "users", user.uid), { name: newName });
+
+      nameEl.textContent = newName;
+      localStorage.setItem("userName", newName); // update navbar
+      nameMsg.textContent = "✅ Name updated successfully!";
+      nameMsg.style.color = "green";
+    } catch (err) {
+      nameMsg.textContent = "❌ " + err.message;
+      nameMsg.style.color = "red";
+    }
+  });
+
+  // ====== UPDATE PASSWORD ======
+  document.getElementById("updatePasswordBtn").addEventListener("click", async () => {
+    const newPassword = document.getElementById("newPassword").value;
+    if (!newPassword) return;
+
+    try {
+      const user = auth.currentUser;
+      if (!user) throw new Error("No user signed in.");
+
+      await updatePassword(user, newPassword);
+      passMsg.textContent = "✅ Password updated successfully!";
+      passMsg.style.color = "green";
+    } catch (err) {
+      passMsg.textContent = "❌ " + err.message;
+      passMsg.style.color = "red";
+    }
+  });
+</script>
+
+</body>
+</html>

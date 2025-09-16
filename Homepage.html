@@ -164,19 +164,11 @@
     });
   </script>
 
-  <script>
-    fetch("Navbar.html")
-      .then(response => response.text())
-      .then(data => {
-        document.getElementById("navbar").innerHTML = data;
-        const script = document.createElement("script");
-        script.src = "assets/js/Navbar.js";
-        document.body.appendChild(script);
-      });
+    <!-- Scripts -->
+  <script type="module">
+    import { loadNavbar } from "./assets/js/Navbar.js";
+    loadNavbar();
   </script>
-
-
-
 
 </body>
 

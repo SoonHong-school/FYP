@@ -97,21 +97,6 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // ====== NAVBAR LOAD ======
-        fetch("Navbar.html")
-            .then(res => res.text())
-            .then(data => {
-                document.getElementById("navbar").innerHTML = data;
-                const hamburger = document.getElementById("hamburger");
-                const navMenu = document.getElementById("nav-menu");
-                if (hamburger && navMenu) {
-                    hamburger.addEventListener("click", () => {
-                        navMenu.classList.toggle("active");
-                        hamburger.innerHTML = navMenu.classList.contains("active") ? "&times;" : "&#9776;";
-                    });
-                }
-            });
-
         // ====== SERVICE OPTIONS BASED ON CAR TYPE ======
         const carTypeSelect = document.getElementById("carType");
         const serviceTypeSelect = document.getElementById("serviceType");
@@ -290,6 +275,10 @@
             }
         });
 
+    </script>
+    <script type="module">
+    import { loadNavbar } from "./assets/js/Navbar.js";
+    loadNavbar();
     </script>
 </body>
 
