@@ -1,0 +1,183 @@
+<script type="module">
+  // Import Firebase from CDN
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
+  import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getStorage } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+
+  // Your Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyD882u-zk7FB3YMwL0Nm3_VYD4xsCMt6cQ",
+    authDomain: "carlisting-f88f2.firebaseapp.com",
+    projectId: "carlisting-f88f2",
+    storageBucket: "carlisting-f88f2.appspot.com",
+    messagingSenderId: "49221518207",
+    appId: "1:49221518207:web:c5e2fd962b802322bfd04a",
+    measurementId: "G-EMFC5Q8FZ5"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+
+  console.log("✅ Firebase connected successfully!");
+</script>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Car Listing Website</title>
+  <link rel="stylesheet" href="assets/css/Homepage.css">
+</head>
+
+<body>
+
+  <div id="navbar"></div>
+
+  <!-- Hero Section -->
+  <section class="hero-container">
+
+    <!-- Filter Box -->
+    <div class="filter-box">
+      <h3>Find new & used cars for sale</h3>
+      <select>
+        <option>All Condition</option>
+        <option>New</option>
+        <option>Used</option>
+      </select>
+
+      <select>
+        <option>Brand</option>
+        <option>Toyota</option>
+        <option>Honda</option>
+        <option>Perodua</option>
+      </select>
+
+      <select>
+        <option>Model</option>
+      </select>
+
+      <select>
+        <option>All State</option>
+        <option>Kuala Lumpur</option>
+        <option>Selangor</option>
+        <option>Penang</option>
+      </select>
+
+      <select>
+        <option>Price</option>
+        <option>Below RM50k</option>
+        <option>RM50k - RM100k</option>
+        <option>Above RM100k</option>
+      </select>
+
+      <input type="text" placeholder="What car are you looking for?">
+
+      <button class="btn-search">Search</button>
+      <a href="#" class="advanced-search">Advanced search »</a>
+    </div>
+
+    <!-- Banner Carousel -->
+    <div class="hero-banner">
+      <div class="carousel">
+        <div class="slides">
+          <img src="assets/images/banner1.png" alt="Banner 1">
+          <img src="assets/images/banner2.png" alt="Banner 2">
+          <img src="assets/images/banner3.png" alt="Banner 3">
+        </div>
+        <div class="carousel-controls">
+          <span class="prev">&#10094;</span>
+          <span class="next">&#10095;</span>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+
+
+  <!-- Car Listings -->
+  <section class="listings">
+    <h2>Latest Car Listings</h2>
+    <div class="car-grid">
+      <!-- Example Car Card -->
+      <div class="car-card">
+        <img src="assets/images/car1.jpg" alt="Car">
+        <h3>Toyota Corolla</h3>
+        <p>Year: 2020 | Price: RM60,000</p>
+        <button>View Details</button>
+      </div>
+      <div class="car-card">
+        <img src="assets/images/car2.jpg" alt="Car">
+        <h3>Honda Civic</h3>
+        <p>Year: 2019 | Price: RM75,000</p>
+        <button>View Details</button>
+      </div>
+      <div class="car-card">
+        <img src="assets/images/car3.jpg" alt="Car">
+        <h3>Perodua Myvi</h3>
+        <p>Year: 2021 | Price: RM45,000</p>
+        <button>View Details</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <p>© 2025 AutoCareMatch | All Rights Reserved</p>
+  </footer>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // ====== CAROUSEL SLIDER ======
+      const slides = document.querySelector(".slides");
+      const images = document.querySelectorAll(".slides img");
+      const prev = document.querySelector(".prev");
+      const next = document.querySelector(".next");
+
+      let index = 0;
+
+      function showSlide(i) {
+        if (i >= images.length) index = 0;
+        if (i < 0) index = images.length - 1;
+        slides.style.transform = `translateX(${-index * 100}%)`;
+      }
+
+      next.addEventListener("click", () => {
+        index++;
+        showSlide(index);
+      });
+
+      prev.addEventListener("click", () => {
+        index--;
+        showSlide(index);
+      });
+
+      // Auto slide every 5s
+      setInterval(() => {
+        index++;
+        showSlide(index);
+      }, 5000);
+    });
+  </script>
+
+  <script>
+    fetch("Navbar.html")
+      .then(response => response.text())
+      .then(data => {
+        document.getElementById("navbar").innerHTML = data;
+        const script = document.createElement("script");
+        script.src = "assets/js/Navbar.js";
+        document.body.appendChild(script);
+      });
+  </script>
+
+
+
+
+</body>
+
+</html>

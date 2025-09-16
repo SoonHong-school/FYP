@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manager | AutoCareMatch</title>
+  <link rel="stylesheet" href="assets/css/ManagerHome.css">
+</head>
+<body>
+  <header>
+    <h1>Manager Dashboard</h1>
+  </header>
+
+  <main class="dashboard">
+    <!-- Pending Agents -->
+    <section class="pending-section">
+      <h2>Pending Agents</h2>
+      <ul id="pendingList" class="agent-list"></ul>
+    </section>
+
+    <!-- Approved Agents -->
+    <section class="approved-section">
+      <h2>Approved Agents</h2>
+      <ul id="approvedList" class="agent-list"></ul>
+    </section>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, query, where, getDocs, updateDoc, doc, onSnapshot } 
+      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    // Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyD882u-zk7FB3YMwL0Nm3_VYD4xsCMt6cQ",
+      authDomain: "carlisting-f88f2.firebaseapp.com",
+      projectId: "carlisting-f88f2",
+      storageBucket: "carlisting-f88f2.appspot.com",
+      messagingSenderId: "49221518207",
+      appId: "1:49221518207:web:c5e2fd962b802322bfd04a",
+      measurementId: "G-EMFC5Q8FZ5"
+    };
+
+    // Init Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const pendingList = document.getElementById("pendingList");
+    const approvedList = document.getElementById("approvedList");
+
+    // Render Pending Agents
+    function renderPendingAgent(docSnap) {
+      const li = document.createElement("li");
+      li.innerHTML = `
+        <span>${docSnap.data().name} (${docSnap.data().email})</span>
+        <button class="approve-btn" data-id="${docSnap.id}">Approve</button>
+      `;
+      pendingList.appendChild(li);
+
+      li.querySelector(".approve-btn").addEventListener("click", async () => {
+        await updateDoc(doc(db, "users", docSnap.id), {
+          role: "agent",
+          approved: true,
+          approvedAt: new Date()
+        });
+      });
+    }
+
+    // Render Approved Agents
+    function renderApprovedAgent(docSnap) {
+      const li = document.createElement("li");
+      li.textContent = `${docSnap.data().name} (${docSnap.data().email})`;
+      approvedList.appendChild(li);
+    }
+
+    // Live listener for pending agents
+    onSnapshot(query(collection(db, "users"), where("role", "==", "pending-agent")), (snapshot) => {
+      pendingList.innerHTML = "";
+      snapshot.forEach(docSnap => renderPendingAgent(docSnap));
+    });
+
+    // Live listener for approved agents
+    onSnapshot(query(collection(db, "users"), where("role", "==", "agent")), (snapshot) => {
+      approvedList.innerHTML = "";
+      snapshot.forEach(docSnap => renderApprovedAgent(docSnap));
+    });
+  </script>
+</body>
+</html>

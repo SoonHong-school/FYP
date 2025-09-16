@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome - AutoCareMatch</title>
+  <link rel="stylesheet" href="assets/css/WelcomePage.css">
+  <!-- Three.js -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
+  <!-- GLTFLoader -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/examples/js/loaders/GLTFLoader.js"></script>
+</head>
+<body>
+  <div class="welcome-container">
+    <h1 class="title">Welcome to AutoCareMatch</h1>
+    <p class="subtitle">Choose your preference</p>
+
+    <!-- 3D Car Container -->
+    <div id="car-container"></div>
+
+    <!-- Buttons -->
+    <div class="choices">
+      <a href="index.html?type=petrol" class="btn">🚗 Petrol Cars</a>
+      <a href="index.html?type=ev" class="btn">⚡ EV Cars</a>
+    </div>
+  </div>
+
+  <!-- Canvas container -->
+  <div id="canvas-container"></div>
+
+  <script src="script.js"></script>
+
+</body>
+</html>

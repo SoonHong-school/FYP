@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About Us | AutoCareMatch</title>
+  <link rel="stylesheet" href="assets/css/AboutUs.css">
+  <style>
+    /* Hero Banner */
+    .hero-banner {
+      background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.8)),
+                  url("assets/images/aboutusbanner.jpg") no-repeat center center/cover;
+      color: #fff;
+      padding: 100px 20px;
+      text-align: center;
+    }
+    .hero-banner h1 {
+      font-size: 3rem;
+      margin-bottom: 10px;
+    }
+    .hero-banner p {
+      font-size: 1.2rem;
+      max-width: 700px;
+      margin: auto;
+    }
+
+    /* Mission Cards */
+    .mission-section {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      padding: 50px 20px;
+      text-align: center;
+    }
+    .mission-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .mission-card h3 {
+      margin-bottom: 10px;
+    }
+
+    /* Timeline */
+    .timeline {
+      padding: 50px 20px;
+    }
+    .timeline h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .timeline ul {
+      list-style: none;
+      padding: 0;
+    }
+    .timeline li {
+      margin: 20px 0;
+      padding-left: 20px;
+      border-left: 3px solid #000;
+    }
+
+    /* Stats Section */
+    .stats-section {
+      background: #f5f7fa;
+      padding: 50px 20px;
+      display: flex;
+      justify-content: space-around;
+      text-align: center;
+    }
+    .stat {
+      font-size: 1.5rem;
+    }
+    .stat span {
+      font-size: 2.5rem;
+      font-weight: bold;
+      display: block;
+      color: #000;
+    }
+
+    /* Team Section */
+    .team-section {
+      padding: 50px 20px;
+      text-align: center;
+    }
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+    .team-member {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .team-member img {
+      width: 100px;
+      border-radius: 50%;
+      margin-bottom: 10px;
+    }
+
+    /* Review Section */
+    .review-section {
+      padding: 50px 20px;
+      text-align: center;
+    }
+    #reviewsList {
+      margin-top: 20px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+      text-align: left;
+    }
+    .review-item {
+      background: #f5f7fa;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+
+    footer {
+      background: #000;
+      color: #fff;
+      text-align: center;
+      padding: 15px;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="navbar"></div>
+
+  <!-- Hero Banner -->
+  <section class="hero-banner">
+    <h1>About AutoCareMatch</h1>
+    <p>Connecting buyers, dealers, and service providers into one integrated solution since 2025.</p>
+  </section>
+
+  <!-- Mission / Values -->
+  <section class="mission-section">
+    <div class="mission-card">
+      <h3>🚗 Simplifying Car Buying</h3>
+      <p>Find the right car with ease and confidence.</p>
+    </div>
+    <div class="mission-card">
+      <h3>🛠 Trusted Car Service</h3>
+      <p>Book reliable and transparent car services.</p>
+    </div>
+    <div class="mission-card">
+      <h3>📊 Transparent Reports</h3>
+      <p>Get detailed insights and vehicle history.</p>
+    </div>
+    <div class="mission-card">
+      <h3>🌍 Community Driven</h3>
+      <p>We believe in innovation and trust in mobility.</p>
+    </div>
+  </section>
+
+  <!-- Timeline -->
+  <section class="timeline">
+    <h2>Our Journey</h2>
+    <ul>
+      <li><strong>2025 January:</strong> AutoCareMatch founded.</li>
+      <li><strong>2025 March:</strong> Added car service booking.</li>
+      <li><strong>2025 July:</strong> Expanded with agent and manager roles.</li>
+      <li><strong>2025 September :</strong> Serving thousands of customers nationwide.</li>
+    </ul>
+  </section>
+
+  <!-- Stats Section -->
+  <section class="stats-section">
+    <div class="stat"><span>5,000+</span> Cars Listed</div>
+    <div class="stat"><span>3,000+</span> Happy Customers</div>
+    <div class="stat"><span>1,200+</span> Services Completed</div>
+  </section>
+
+  <!-- Team Section -->
+  <section class="team-section">
+    <h2>Meet Our Team</h2>
+    <div class="team-grid">
+      <div class="team-member">
+        <img src="assets/images/profile_developer.png" alt="Team Member">
+        <h3>John Doe</h3>
+        <p>Founder & CEO</p>
+      </div>
+      <div class="team-member">
+        <img src="assets/images/profile_developer.png" alt="Team Member">
+        <h3>Jane Smith</h3>
+        <p>Operations Manager</p>
+      </div>
+      <div class="team-member">
+        <img src="assets/images/profile_developer.png" alt="Team Member">
+        <h3>Alex Tan</h3>
+        <p>Lead Developer</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Review Form -->
+  <section class="review-section">
+    <h2>Leave a Review</h2>
+    <form id="reviewForm">
+      <input type="text" id="name" placeholder="Your Name" required>
+      <textarea id="review" placeholder="Write your review..." required></textarea>
+      <button type="submit">Submit Review</button>
+    </form>
+    <div id="reviewMessage"></div>
+
+    <h3>What Others Say</h3>
+    <div id="reviewsList"></div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <p>© 2025 AutoCareMatch | All Rights Reserved</p>
+  </footer>
+
+  <!-- Firebase Script -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, serverTimestamp, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyD882u-zk7FB3YMwL0Nm3_VYD4xsCMt6cQ",
+      authDomain: "carlisting-f88f2.firebaseapp.com",
+      projectId: "carlisting-f88f2",
+      storageBucket: "carlisting-f88f2.appspot.com",
+      messagingSenderId: "49221518207",
+      appId: "1:49221518207:web:c5e2fd962b802322bfd04a",
+      measurementId: "G-EMFC5Q8FZ5"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const reviewForm = document.getElementById("reviewForm");
+    const reviewMessage = document.getElementById("reviewMessage");
+    const reviewsList = document.getElementById("reviewsList");
+
+    // Submit review
+    reviewForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const name = document.getElementById("name").value.trim();
+      const review = document.getElementById("review").value.trim();
+
+      if (name && review) {
+        try {
+          await addDoc(collection(db, "reviews"), {
+            name: name,
+            review: review,
+            timestamp: serverTimestamp()
+          });
+          reviewMessage.textContent = "✅ Thank you! Your review has been submitted.";
+          reviewMessage.style.color = "green";
+          reviewForm.reset();
+          loadReviews(); // Refresh reviews after submitting
+        } catch (error) {
+          reviewMessage.textContent = "❌ Error: " + error.message;
+          reviewMessage.style.color = "red";
+        }
+      }
+    });
+
+    // Load reviews
+    async function loadReviews() {
+      const q = query(collection(db, "reviews"), orderBy("timestamp", "desc"));
+      const snapshot = await getDocs(q);
+      reviewsList.innerHTML = "";
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const reviewItem = document.createElement("div");
+        reviewItem.classList.add("review-item");
+        reviewItem.innerHTML = `<strong>${data.name}</strong><p>${data.review}</p>`;
+        reviewsList.appendChild(reviewItem);
+      });
+    }
+
+    loadReviews();
+  </script>
+
+  <!-- Navbar Loader -->
+  <script>
+    fetch("Navbar.html")
+      .then(response => response.text())
+      .then(data => {
+        document.getElementById("navbar").innerHTML = data;
+        const script = document.createElement("script");
+        script.src = "assets/js/Navbar.js";
+        document.body.appendChild(script);
+      });
+  </script>
+
+</body>
+</html>
