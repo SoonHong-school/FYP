@@ -6,6 +6,7 @@
   <title>User Profile | AutoCareMatch</title>
   <link rel="stylesheet" href="assets/css/Navbar.css">
   <link rel="stylesheet" href="assets/css/UserProfile.css">
+  <link rel="stylesheet" href="assets/css/Footer.css">
 </head>
 <body>
 
@@ -32,144 +33,144 @@
       <button id="updateNameBtn">Update Name</button>
       <p id="nameMsg" class="msg"></p>
 
-      <!-- Update Password -->
-      <h3>Update Password</h3>
-      <input type="password" id="newPassword" placeholder="Enter new password">
-      <button id="updatePasswordBtn">Update Password</button>
-      <p id="passMsg" class="msg"></p>
+      <!-- Reset Password via Email -->
+      <h3>Change Password</h3>
+      <button id="resetPasswordBtn">Send Password Reset Email</button>
+      <p id="resetMsg" class="msg"></p>
     </div>
   </section>
 
   <!-- Footer -->
-  <footer>
-    <p>© 2025 AutoCareMatch | All Rights Reserved</p>
-  </footer>
+  <div id="footer"></div>
 
   <!-- Firebase + Profile Script -->
   <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { 
-    getAuth, 
-    onAuthStateChanged, 
-    updateProfile, 
-    updatePassword 
-  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-  import { 
-    getFirestore, 
-    doc, 
-    getDoc, 
-    updateDoc 
-  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { 
+      getAuth, 
+      onAuthStateChanged, 
+      updateProfile, 
+      sendPasswordResetEmail 
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { 
+      getFirestore, 
+      doc, 
+      getDoc, 
+      updateDoc 
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-  import { loadNavbar } from "./assets/js/Navbar.js";
+    import { loadNavbar } from "./assets/js/Navbar.js";
 
-  // Firebase Config
-  const firebaseConfig = {
-    apiKey: "AIzaSyD882u-zk7FB3YMwL0Nm3_VYD4xsCMt6cQ",
-    authDomain: "carlisting-f88f2.firebaseapp.com",
-    projectId: "carlisting-f88f2",
-    storageBucket: "carlisting-f88f2.appspot.com",
-    messagingSenderId: "49221518207",
-    appId: "1:49221518207:web:c5e2fd962b802322bfd04a",
-    measurementId: "G-EMFC5Q8FZ5"
-  };
+    // Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyD882u-zk7FB3YMwL0Nm3_VYD4xsCMt6cQ",
+      authDomain: "carlisting-f88f2.firebaseapp.com",
+      projectId: "carlisting-f88f2",
+      storageBucket: "carlisting-f88f2.appspot.com",
+      messagingSenderId: "49221518207",
+      appId: "1:49221518207:web:c5e2fd962b802322bfd04a",
+      measurementId: "G-EMFC5Q8FZ5"
+    };
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-  // ====== NAVBAR LOAD ======
-  fetch("Navbar.html")
-    .then(res => res.text())
-    .then(data => {
-      document.getElementById("navbar").innerHTML = data;
-      loadNavbar();
-    });
+    // ====== NAVBAR LOAD ======
+    fetch("Navbar.html")
+      .then(res => res.text())
+      .then(data => {
+        document.getElementById("navbar").innerHTML = data;
+        loadNavbar();
+      });
 
-  // ====== PROFILE ELEMENTS ======
-  const nameEl = document.getElementById("profileName");
-  const emailEl = document.getElementById("profileEmail");
-  const roleEl = document.getElementById("profileRole");
-  const createdEl = document.getElementById("profileCreated");
+    // ====== PROFILE ELEMENTS ======
+    const nameEl = document.getElementById("profileName");
+    const emailEl = document.getElementById("profileEmail");
+    const roleEl = document.getElementById("profileRole");
+    const createdEl = document.getElementById("profileCreated");
 
-  const nameMsg = document.getElementById("nameMsg");
-  const passMsg = document.getElementById("passMsg");
+    const nameMsg = document.getElementById("nameMsg");
+    const resetMsg = document.getElementById("resetMsg");
 
-  // ====== LOAD USER INFO ======
-  onAuthStateChanged(auth, async (user) => {
-    if (user) {
-      try {
-        // Show basic info from Firebase Auth
-        nameEl.textContent = user.displayName || "N/A";
-        emailEl.textContent = user.email;
+    // ====== LOAD USER INFO ======
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        try {
+          // Show basic info from Firebase Auth
+          nameEl.textContent = user.displayName || "N/A";
+          emailEl.textContent = user.email;
 
-        // Load extra info from Firestore
-        const userDocRef = doc(db, "users", user.uid);
-        const userSnap = await getDoc(userDocRef);
+          // Load extra info from Firestore
+          const userDocRef = doc(db, "users", user.uid);
+          const userSnap = await getDoc(userDocRef);
 
-        if (userSnap.exists()) {
-          const data = userSnap.data();
-          roleEl.textContent = data.role || "user";
+          if (userSnap.exists()) {
+            const data = userSnap.data();
+            roleEl.textContent = data.role || "user";
 
-          // Firestore Timestamp -> Date
-          if (data.createdAt?.toDate) {
-            createdEl.textContent = data.createdAt.toDate().toLocaleDateString();
+            // Firestore Timestamp -> Date
+            if (data.createdAt?.toDate) {
+              createdEl.textContent = data.createdAt.toDate().toLocaleDateString();
+            } else {
+              createdEl.textContent = "N/A";
+            }
           } else {
+            roleEl.textContent = "N/A";
             createdEl.textContent = "N/A";
           }
-        } else {
-          roleEl.textContent = "N/A";
-          createdEl.textContent = "N/A";
+        } catch (err) {
+          console.error("Error loading profile:", err);
         }
-      } catch (err) {
-        console.error("Error loading profile:", err);
+      } else {
+        // Not logged in → redirect to login page
+        window.location.href = "Login.html";
       }
-    } else {
-      // Not logged in → redirect to login page
-      window.location.href = "Login.html";
-    }
-  });
+    });
 
-  // ====== UPDATE NAME ======
-  document.getElementById("updateNameBtn").addEventListener("click", async () => {
-    const newName = document.getElementById("newName").value;
-    if (!newName) return;
+    // ====== UPDATE NAME ======
+    document.getElementById("updateNameBtn").addEventListener("click", async () => {
+      const newName = document.getElementById("newName").value;
+      if (!newName) return;
 
-    try {
-      const user = auth.currentUser;
-      if (!user) throw new Error("No user signed in.");
+      try {
+        const user = auth.currentUser;
+        if (!user) throw new Error("No user signed in.");
 
-      await updateProfile(user, { displayName: newName });
-      await updateDoc(doc(db, "users", user.uid), { name: newName });
+        await updateProfile(user, { displayName: newName });
+        await updateDoc(doc(db, "users", user.uid), { name: newName });
 
-      nameEl.textContent = newName;
-      localStorage.setItem("userName", newName); // update navbar
-      nameMsg.textContent = "✅ Name updated successfully!";
-      nameMsg.style.color = "green";
-    } catch (err) {
-      nameMsg.textContent = "❌ " + err.message;
-      nameMsg.style.color = "red";
-    }
-  });
+        nameEl.textContent = newName;
+        localStorage.setItem("userName", newName); // update navbar
+        nameMsg.textContent = "✅ Name updated successfully!";
+        nameMsg.style.color = "green";
+      } catch (err) {
+        nameMsg.textContent = "❌ " + err.message;
+        nameMsg.style.color = "red";
+      }
+    });
 
-  // ====== UPDATE PASSWORD ======
-  document.getElementById("updatePasswordBtn").addEventListener("click", async () => {
-    const newPassword = document.getElementById("newPassword").value;
-    if (!newPassword) return;
+    // ====== RESET PASSWORD EMAIL ======
+    document.getElementById("resetPasswordBtn").addEventListener("click", async () => {
+      try {
+        const user = auth.currentUser;
+        if (!user) throw new Error("No user signed in.");
 
-    try {
-      const user = auth.currentUser;
-      if (!user) throw new Error("No user signed in.");
+        await sendPasswordResetEmail(auth, user.email);
+        resetMsg.textContent = "📧 Password reset email sent! Check your inbox.";
+        resetMsg.style.color = "green";
+      } catch (err) {
+        resetMsg.textContent = "❌ " + err.message;
+        resetMsg.style.color = "red";
+      }
+    });
+  </script>
 
-      await updatePassword(user, newPassword);
-      passMsg.textContent = "✅ Password updated successfully!";
-      passMsg.style.color = "green";
-    } catch (err) {
-      passMsg.textContent = "❌ " + err.message;
-      passMsg.style.color = "red";
-    }
-  });
-</script>
+  <!-- Footer Loader -->
+  <script type="module">
+    import { loadFooter } from "./assets/js/Footer.js";
+    loadFooter();
+  </script>
 
 </body>
 </html>

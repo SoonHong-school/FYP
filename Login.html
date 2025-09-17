@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Login / Register | AutoCareMatch</title>
+  <title>Login / Register | AutoCarMatch</title>
   <link rel="stylesheet" href="assets/css/Login.css">
+  <link rel="stylesheet" href="assets/css/Footer.css">
 </head>
 <body>
 
@@ -47,10 +48,8 @@
     </div>
   </section>
 
-  <!-- Footer -->
-  <footer>
-    <p>© 2025 AutoCareMatch | All Rights Reserved</p>
-  </footer>
+  <!-- Placeholder for footer -->
+  <div id="footer"></div>
 
   <!-- Firebase + Auth + Firestore -->
   <script type="module">
@@ -259,6 +258,10 @@ document.getElementById("registerForm").addEventListener("submit", async (e) => 
 });
 
 </script>
+<script type="module">
+  import { loadFooter } from "./assets/js/Footer.js";
+  loadFooter();
+  </script>
 
 </body>
 </html>

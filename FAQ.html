@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FAQ | AutoCareMatch</title>
+  <link rel="stylesheet" href="assets/css/Navbar.css">
+  <link rel="stylesheet" href="assets/css/FAQ.css">
+  <link rel="stylesheet" href="assets/css/Footer.css">
+</head>
+<body>
+
+  <!-- Navbar -->
+  <div id="navbar"></div>
+
+  <!-- FAQ Section -->
+  <section class="faq-section">
+    <div class="faq-container">
+      <h2>❓ Frequently Asked Questions</h2>
+      <p class="faq-intro">Find answers to common questions about AutoCareMatch.</p>
+
+      <div class="faq-item">
+        <button class="faq-question">How do I book a car service? <span>+</span></button>
+        <div class="faq-answer">
+          <p>Go to the Car Service page, fill in your car details and preferred time, then select an available agent to confirm your appointment.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question">Do I need an account to use AutoCareMatch? <span>+</span></button>
+        <div class="faq-answer">
+          <p>You can browse cars without logging in, but booking a service or contacting agents requires you to create an account.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question">Can I compare cars before buying? <span>+</span></button>
+        <div class="faq-answer">
+          <p>Yes! Use our Comparing Tools page to compare multiple cars side by side, including specifications and price range.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question">How do I reset my password? <span>+</span></button>
+        <div class="faq-answer">
+          <p>You can reset your password from the login page by clicking "Forgot Password". An email will be sent to help you set a new password.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question">Is AutoCareMatch free to use? <span>+</span></button>
+        <div class="faq-answer">
+          <p>Yes, browsing cars and checking services is completely free. Only specific services from agents may include charges.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <div id="footer"></div>
+
+  <!-- Scripts -->
+  <script type="module">
+    import { loadNavbar } from "./assets/js/Navbar.js";
+    loadNavbar();
+
+    import { loadFooter } from "./assets/js/Footer.js";
+    loadFooter();
+  </script>
+
+  <!-- FAQ Toggle Script -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const questions = document.querySelectorAll(".faq-question");
+      questions.forEach(q => {
+        q.addEventListener("click", () => {
+          const answer = q.nextElementSibling;
+          const isOpen = answer.style.display === "block";
+
+          // Close all other answers
+          document.querySelectorAll(".faq-answer").forEach(a => a.style.display = "none");
+          document.querySelectorAll(".faq-question span").forEach(s => s.textContent = "+");
+
+          // Toggle current one
+          if (!isOpen) {
+            answer.style.display = "block";
+            q.querySelector("span").textContent = "−";
+          }
+        });
+      });
+    });
+  </script>
+
+</body>
+</html>

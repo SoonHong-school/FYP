@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="assets/css/Login.css">
     <!-- Page-specific styles -->
     <link rel="stylesheet" href="assets/css/CarService.css">
+    <link rel="stylesheet" href="assets/css/Footer.css">
 </head>
 
 <body>
@@ -72,15 +73,24 @@
         </div>
     </section>
 
-    <!-- Footer -->
-    <footer>
-        <p>© 2025 AutoCareMatch | All Rights Reserved</p>
-    </footer>
+    <!-- Placeholder for footer -->
+    <div id="footer"></div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-        import { getFirestore, collection, query, where, getDocs, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { 
+            getAuth, 
+            onAuthStateChanged 
+        } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+        import { 
+            getFirestore, 
+            collection, 
+            query, 
+            where, 
+            getDocs, 
+            addDoc, 
+            serverTimestamp 
+        } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
         // ====== FIREBASE CONFIG ======
         const firebaseConfig = {
@@ -96,6 +106,14 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+
+        // ====== PROTECT PAGE: REQUIRE LOGIN ======
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                // If not logged in, redirect to login page
+                window.location.href = "Login.html";  // change path if needed
+            }
+        });
 
         // ====== SERVICE OPTIONS BASED ON CAR TYPE ======
         const carTypeSelect = document.getElementById("carType");
@@ -150,7 +168,6 @@
 
         // Generate slots when page loads
         generateTimeSlots();
-
 
         // ====== FORM HANDLING ======
         document.getElementById("carServiceForm").addEventListener("submit", async (e) => {
@@ -211,11 +228,11 @@
                             const div = document.createElement("div");
                             div.className = "agent-card";
                             div.innerHTML = `
-            <h3>${agent.name || "Unnamed Agent"}</h3>
-            <p><strong>Specialty:</strong> ${agent.specialty || "General Service"}</p>
-            <p><strong>Type:</strong> ${agent.type.toUpperCase()}</p>
-            <button class="book-btn">Book with ${agent.name || "Agent"}</button>
-          `;
+                                <h3>${agent.name || "Unnamed Agent"}</h3>
+                                <p><strong>Specialty:</strong> ${agent.specialty || "General Service"}</p>
+                                <p><strong>Type:</strong> ${agent.type.toUpperCase()}</p>
+                                <button class="book-btn">Book with ${agent.name || "Agent"}</button>
+                            `;
 
                             // Handle booking
                             div.querySelector(".book-btn").addEventListener("click", async () => {
@@ -277,8 +294,12 @@
 
     </script>
     <script type="module">
-    import { loadNavbar } from "./assets/js/Navbar.js";
-    loadNavbar();
+        import { loadNavbar } from "./assets/js/Navbar.js";
+        loadNavbar();
+    </script>
+    <script type="module">
+    import { loadFooter } from "./assets/js/Footer.js";
+    loadFooter();
     </script>
 </body>
 

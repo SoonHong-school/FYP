@@ -1,9 +1,10 @@
 // Navbar.js
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
 export function loadNavbar() {
   fetch("Navbar.html")
     .then(res => res.text())
     .then(data => {
-      // Insert the navbar HTML into the placeholder
       document.getElementById("navbar").innerHTML = data;
 
       // ====== HAMBURGER MENU ======
@@ -27,43 +28,55 @@ export function loadNavbar() {
         });
       });
 
-      // ====== LOGIN STATE CHECK ======
-      const isLoggedIn = localStorage.getItem("isLoggedIn");
-      const userName = localStorage.getItem("userName");
-
-      if (isLoggedIn === "true" && userName) {
+      // ====== FIREBASE AUTH STATE ======
+      const auth = getAuth();
+      onAuthStateChanged(auth, (user) => {
         const loginLink = document.querySelector('a[href="Login.html"]');
-        if (loginLink) {
-          loginLink.parentElement.outerHTML = `
-            <li class="dropdown user-dropdown">
-              <a href="#" class="dropdown-toggle">👋 ${userName} ▾</a>
-              <ul class="dropdown-menu">
-                <li><a href="UserProfile.html">Profile</a></li>
-                <li><a href="#" id="logoutBtn">Logout</a></li>
-              </ul>
-            </li>
-          `;
-        }
+        if (user) {
+          // Replace Login link with user dropdown
+          if (loginLink) {
+            loginLink.parentElement.outerHTML = `
+              <li class="dropdown user-dropdown">
+                <a href="#" class="dropdown-toggle">👋 ${user.displayName || user.email} ▾</a>
+                <ul class="dropdown-menu">
+                  <li><a href="UserProfile.html">Profile</a></li>
+                  <li><a href="#" id="logoutBtn">Logout</a></li>
+                </ul>
+              </li>
+            `;
+          }
 
-        // Re-bind dropdown toggle for the new user menu
-        document.querySelectorAll(".dropdown-toggle").forEach(toggle => {
-          toggle.addEventListener("click", e => {
-            e.preventDefault();
-            toggle.parentElement.classList.toggle("active");
+          // Re-bind dropdown toggle
+          document.querySelectorAll(".dropdown-toggle").forEach(toggle => {
+            toggle.addEventListener("click", e => {
+              e.preventDefault();
+              toggle.parentElement.classList.toggle("active");
+            });
           });
-        });
 
-        // Logout button event
-        const logoutBtn = document.getElementById("logoutBtn");
-        if (logoutBtn) {
-          logoutBtn.addEventListener("click", e => {
-            e.preventDefault();
-            localStorage.removeItem("isLoggedIn");
-            localStorage.removeItem("userName");
-            window.location.href = "Homepage.html";
-          });
+          // ====== LOGOUT HANDLER ======
+          const logoutBtn = document.getElementById("logoutBtn");
+          if (logoutBtn) {
+            logoutBtn.addEventListener("click", async (e) => {
+              e.preventDefault();
+              try {
+                await signOut(auth);
+
+                // Clear local/session storage to remove cached user data
+                localStorage.clear();
+                sessionStorage.clear();
+
+                // Redirect to homepage
+                window.location.href = "Homepage.html";
+              } catch (err) {
+                console.error("Logout failed:", err);
+              }
+            });
+          }
+        } else {
+          // User is logged out → do nothing (Login/Register stays visible)
         }
-      }
+      });
     })
     .catch(err => console.error("Error loading navbar:", err));
 }

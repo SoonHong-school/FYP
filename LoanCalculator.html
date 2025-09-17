@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Car Loan Calculator | AutoCareMatch</title>
+  <link rel="stylesheet" href="assets/css/Navbar.css">
+  <link rel="stylesheet" href="assets/css/Footer.css">
+  <link rel="stylesheet" href="assets/css/LoanCalculator.css">
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <div id="navbar"></div>
+
+  <!-- Loan Calculator -->
+  <section class="calculator-container">
+    <h2>Car Loan Calculator</h2>
+
+    <div class="calc-group">
+      <label for="loanAmount">Car Price (RM)</label>
+      <input type="number" id="loanAmount" placeholder="Enter car price">
+    </div>
+
+    <div class="calc-group">
+      <label for="downPayment">Down Payment (RM)</label>
+      <input type="number" id="downPayment" placeholder="Enter down payment">
+    </div>
+
+    <div class="calc-group">
+      <label for="interestRate">Interest Rate (%)</label>
+      <input type="number" id="interestRate" placeholder="e.g. 3.5">
+    </div>
+
+    <div class="calc-group">
+      <label for="loanTerm">Loan Term (Years)</label>
+      <input type="number" id="loanTerm" placeholder="e.g. 7">
+    </div>
+
+    <button class="calc-btn" id="calcBtn">Calculate</button>
+
+    <!-- Main Result -->
+    <div class="calc-result" id="calcResult">💡 Enter details and calculate.</div>
+
+    <!-- Advanced Breakdown -->
+    <div class="calc-breakdown" id="calcBreakdown" style="display: none;">
+      <h3>📊 Loan Breakdown</h3>
+      <p><strong>Loan Amount:</strong> RM <span id="loanVal">0</span></p>
+      <p><strong>Total Payable:</strong> RM <span id="totalPayable">0</span></p>
+      <p><strong>Total Interest:</strong> RM <span id="totalInterest">0</span></p>
+
+      <!-- Chart -->
+      <canvas id="loanChart" width="400" height="400"></canvas>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <div id="footer"></div>
+
+  <!-- Scripts -->
+  <script type="module">
+    import { loadNavbar } from "./assets/js/Navbar.js";
+    import { loadFooter } from "./assets/js/Footer.js";
+    loadNavbar();
+    loadFooter();
+
+    const calcBtn = document.getElementById("calcBtn");
+    const resultEl = document.getElementById("calcResult");
+    const breakdownEl = document.getElementById("calcBreakdown");
+    let loanChart = null;
+
+    calcBtn.addEventListener("click", () => {
+      const price = parseFloat(document.getElementById("loanAmount").value);
+      const down = parseFloat(document.getElementById("downPayment").value);
+      const rate = parseFloat(document.getElementById("interestRate").value) / 100 / 12; // monthly
+      const years = parseInt(document.getElementById("loanTerm").value);
+      const months = years * 12;
+
+      if (isNaN(price) || isNaN(down) || isNaN(rate) || isNaN(years)) {
+        resultEl.textContent = "❌ Please fill in all fields.";
+        resultEl.style.color = "red";
+        breakdownEl.style.display = "none";
+        return;
+      }
+
+      const loan = price - down;
+      if (loan <= 0) {
+        resultEl.textContent = "❌ Down payment must be less than car price.";
+        resultEl.style.color = "red";
+        breakdownEl.style.display = "none";
+        return;
+      }
+
+      // Monthly installment formula
+      const monthly = (loan * rate) / (1 - Math.pow(1 + rate, -months));
+      const totalPayable = monthly * months;
+      const totalInterest = totalPayable - loan;
+
+      // Update main result
+      resultEl.textContent = `📌 Estimated Monthly Installment: RM ${monthly.toFixed(2)}`;
+      resultEl.style.color = "green";
+
+      // Update breakdown
+      document.getElementById("loanVal").textContent = loan.toFixed(2);
+      document.getElementById("totalPayable").textContent = totalPayable.toFixed(2);
+      document.getElementById("totalInterest").textContent = totalInterest.toFixed(2);
+
+      breakdownEl.style.display = "block";
+
+      // Render Pie Chart
+      const ctx = document.getElementById("loanChart").getContext("2d");
+
+      // Destroy previous chart if exists
+      if (loanChart) {
+        loanChart.destroy();
+      }
+
+      loanChart = new Chart(ctx, {
+        type: "pie",
+        data: {
+          labels: ["Loan Amount", "Interest"],
+          datasets: [{
+            data: [loan, totalInterest],
+            backgroundColor: ["#007bff", "#ff5733"],
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: "bottom",
+            }
+          }
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>
