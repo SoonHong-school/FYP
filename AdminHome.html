@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard | AutoCarMatch</title>
+  <link rel="stylesheet" href="assets/css/AdminHome.css">
+
+  <!-- Font Awesome (icons) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="logo">
+      <a href="AdminHome.html">
+        <img src="assets/images/logo.png" alt="AutoCarMatch Logo" style="height:50px;">
+      </a>
+    </div>
+    <ul class="menu">
+      <li><a href="AdminHome.html" class="active"><i class="fas fa-home"></i> Dashboard</a></li>
+      <li><a href="AdminAddCar.html"><i class="fas fa-plus-circle"></i> Insert Car</a></li>
+      <li><a href="AdminManageCars.html"><i class="fas fa-cogs"></i> Manage Cars</a></li>
+      <li><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+    </ul>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <header class="topbar">
+      <h1 id="welcomeTitle">Welcome Back, Admin</h1>
+      <span class="today-date" id="todayDate"></span>
+    </header>
+
+    <!-- Stats Grid -->
+    <section class="stats-grid">
+      <div class="stat-card">
+        <i class="fas fa-car"></i>
+        <h2 id="totalCars">0</h2>
+        <p>Total Cars</p>
+      </div>
+      <div class="stat-card">
+        <i class="fas fa-industry"></i>
+        <h2 id="totalBrands">0</h2>
+        <p>Total Brands</p>
+      </div>
+      <div class="stat-card">
+        <i class="fas fa-bolt"></i>
+        <h2 id="evCars">0</h2>
+        <p>EV Cars</p>
+      </div>
+      <div class="stat-card">
+        <i class="fas fa-gas-pump"></i>
+        <h2 id="petrolCars">0</h2>
+        <p>Petrol Cars</p>
+      </div>
+      <div class="stat-card">
+        <i class="fas fa-leaf"></i>
+        <h2 id="hybridCars">0</h2>
+        <p>Hybrid Cars</p>
+      </div>
+    </section>
+
+    <!-- Charts -->
+    <section class="charts">
+      <div class="chart-card">
+        <h3>Car Distribution</h3>
+        <canvas id="carsChart"></canvas>
+      </div>
+    </section>
+
+    <!-- Recent Activity -->
+    <section class="recent-activity">
+      <h3>Recently Added Cars</h3>
+      <ul id="recentCars">
+        <li>Loading recent cars...</li>
+      </ul>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <p>© 2025 AutoCarMatch | Admin Dashboard</p>
+  </footer>
+
+  <!-- Firebase + Dashboard Logic -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, collection, getDocs, doc, getDoc, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    // Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyD882u-zk7FB3YMwL0Nm3_VYD4xsCMt6cQ",
+      authDomain: "carlisting-f88f2.firebaseapp.com",
+      projectId: "carlisting-f88f2",
+      storageBucket: "carlisting-f88f2.appspot.com",
+      messagingSenderId: "49221518207",
+      appId: "1:49221518207:web:c5e2fd962b802322bfd04a",
+      measurementId: "G-EMFC5Q8FZ5"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let carsChart;
+
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const userRef = doc(db, "users", user.uid);
+        const userSnap = await getDoc(userRef);
+
+        if (!userSnap.exists() || userSnap.data().role !== "admin") {
+          alert("Access denied. Admins only.");
+          window.location.href = "Login.html";
+          return;
+        }
+
+        document.getElementById("welcomeTitle").textContent = `Welcome Back, ${user.email}`;
+        document.getElementById("todayDate").textContent = new Date().toDateString();
+
+        // Load stats
+        async function loadStats() {
+          const carsSnap = await getDocs(collection(db, "cars"));
+          let brands = new Set();
+          let ev = 0, petrol = 0, hybrid = 0;
+
+          carsSnap.forEach(doc => {
+            const car = doc.data();
+            if (car.brand) brands.add(car.brand);
+            if (car.type === "ev") ev++;
+            if (car.type === "petrol") petrol++;
+            if (car.type === "hybrid") hybrid++;
+          });
+
+          document.getElementById("totalCars").textContent = carsSnap.size;
+          document.getElementById("totalBrands").textContent = brands.size;
+          document.getElementById("evCars").textContent = ev;
+          document.getElementById("petrolCars").textContent = petrol;
+          document.getElementById("hybridCars").textContent = hybrid;
+
+          // Chart
+          const ctx = document.getElementById("carsChart");
+          if (carsChart) carsChart.destroy();
+          carsChart = new Chart(ctx, {
+            type: "pie",
+            data: {
+              labels: ["EV", "Petrol", "Hybrid"],
+              datasets: [{
+                data: [ev, petrol, hybrid],
+                backgroundColor: ["#4CAF50", "#2196F3", "#FFC107"]
+              }]
+            }
+          });
+        }
+
+        // Load recent cars
+        async function loadRecentCars() {
+          const q = query(collection(db, "cars"), orderBy("createdAt", "desc"), limit(5));
+          const snap = await getDocs(q);
+          const list = document.getElementById("recentCars");
+          list.innerHTML = "";
+          snap.forEach(doc => {
+            const car = doc.data();
+            const li = document.createElement("li");
+            li.textContent = `${car.brand} ${car.model} (${car.year || "N/A"})`;
+            list.appendChild(li);
+          });
+        }
+
+        loadStats();
+        loadRecentCars();
+      } else {
+        window.location.href = "Login.html";
+      }
+    });
+
+    // Logout
+    window.logout = async function () {
+      await signOut(auth);
+      window.location.href = "Login.html";
+    }
+  </script>
+</body>
+
+</html>

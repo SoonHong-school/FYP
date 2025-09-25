@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Browse Cars | AutoCarMatch</title>
+  <link rel="stylesheet" href="assets/css/CarListing.css">
+  <link rel="stylesheet" href="assets/css/Footer.css">
+</head>
+
+<body>
+  <div id="navbar"></div>
+
+  <!-- Filters -->
+  <div class="filters">
+    <h2>Filter Cars</h2>
+    <div class="filter-row">
+      <label>Brand:</label>
+      <select id="filterBrand">
+        <option value="">All</option>
+      </select>
+
+      <label>Model:</label>
+      <select id="filterModel">
+        <option value="">All</option>
+      </select>
+
+      <label>Year:</label>
+      <select id="filterYear">
+        <option value="">All</option>
+      </select>
+
+      <label>Transmission:</label>
+      <select id="filterTransmission">
+        <option value="">All</option>
+        <option value="Automatic">Automatic</option>
+        <option value="Manual">Manual</option>
+      </select>
+    </div>
+
+    <div class="filter-row">
+      <label>Seats:</label>
+      <select id="filterSeats">
+        <option value="">All</option>
+        <option value="2">2</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
+      </select>
+
+      <label>Color:</label>
+      <input type="text" id="filterColor" placeholder="e.g. Red">
+
+      <label>Price Range:</label>
+      <input type="number" id="minPrice" placeholder="Min RM">
+      <input type="number" id="maxPrice" placeholder="Max RM">
+
+      <label>Mileage Range:</label>
+      <input type="number" id="minMileage" placeholder="Min KM">
+      <input type="number" id="maxMileage" placeholder="Max KM">
+    </div>
+
+    <button id="applyFilters">Apply Filters</button>
+  </div>
+
+  <!-- Cars Grid -->
+  <div class="car-grid" id="carGrid">
+    <p>Loading cars...</p>
+  </div>
+
+  <div id="footer"></div>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyD882u-zk7FB3YMwL0Nm3_VYD4xsCMt6cQ",
+      authDomain: "carlisting-f88f2.firebaseapp.com",
+      projectId: "carlisting-f88f2",
+      storageBucket: "carlisting-f88f2.appspot.com",
+      messagingSenderId: "49221518207",
+      appId: "1:49221518207:web:c5e2fd962b802322bfd04a"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const carGrid = document.getElementById("carGrid");
+
+    async function loadCars() {
+      carGrid.innerHTML = "<p>Loading Petrol cars...</p>";
+
+      // Only get Petrol cars
+      const q = query(collection(db, "cars"), where("type", "==", "Petrol"));
+      const carsSnap = await getDocs(q);
+
+      let cars = [];
+      carsSnap.forEach(doc => {
+        cars.push({ id: doc.id, ...doc.data() });
+      });
+
+      displayCars(cars);
+      populateFilterOptions(cars);
+    }
+
+    function displayCars(cars) {
+      if (cars.length === 0) {
+        carGrid.innerHTML = "<p>❌ No Petrol cars found.</p>";
+        return;
+      }
+
+      carGrid.innerHTML = "";
+      cars.forEach(car => {
+        const price = car.price || 0;
+        const downPayment = price * 0.1;
+        const loanAmount = price - downPayment;
+        const monthly = loanAmount / (9 * 12);
+
+        const carCard = document.createElement("div");
+        carCard.className = "car-card";
+        carCard.innerHTML = `
+      <img src="${car.images?.[0] || 'assets/images/no-image.png'}" alt="${car.brand} ${car.model}">
+      <h3>${car.year} ${car.brand} ${car.model}</h3>
+
+      <div class="monthly-price">
+        RM ${monthly.toFixed(0)}/mo <span class="info-icon" title="10% Down Payment • 9 Years Loan Tenure">ℹ️</span>
+      </div>
+
+      <p class="price">Car Price: RM ${price?.toLocaleString() || 'N/A'}</p>
+      <p>${car.transmission || ''} | ${car.seats || ''} Seats | ${car.color || ''}</p>
+      <button onclick="window.location.href='CarDetail.html?id=${car.id}'">View Details</button>
+    `;
+        carGrid.appendChild(carCard);
+      });
+    }
+
+
+    function populateFilterOptions(cars) {
+      // Populate dropdown filters (brand, model, year) only from Petrol cars
+      let brands = new Set();
+      let models = new Set();
+      let years = new Set();
+
+      cars.forEach(car => {
+        if (car.brand) brands.add(car.brand);
+        if (car.model) models.add(car.model);
+        if (car.year) years.add(car.year);
+      });
+
+      document.getElementById("filterBrand").innerHTML =
+        `<option value="">All</option>` + [...brands].map(b => `<option value="${b}">${b}</option>`).join("");
+
+      document.getElementById("filterModel").innerHTML =
+        `<option value="">All</option>` + [...models].map(m => `<option value="${m}">${m}</option>`).join("");
+
+      document.getElementById("filterYear").innerHTML =
+        `<option value="">All</option>` + [...years].map(y => `<option value="${y}">${y}</option>`).join("");
+    }
+
+    loadCars();
+  </script>
+
+
+  <!-- Navbar & Footer -->
+  <script type="module">
+    import { loadNavbar } from "./assets/js/Navbar.js";
+    loadNavbar();
+  </script>
+  <script type="module">
+    import { loadFooter } from "./assets/js/Footer.js";
+    loadFooter();
+  </script>
+</body>
+
+</html>

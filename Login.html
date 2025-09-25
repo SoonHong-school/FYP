@@ -192,12 +192,12 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
     localStorage.setItem("userName", userCred.user.displayName || userCred.user.email);
 
     setTimeout(() => {
-      if (role === "manager") {
+      if (role === "admin") {
+        window.location.href = "AdminHome.html";   // ✅ Admin redirect
+      } else if (role === "manager") {
         window.location.href = "ManagerHome.html";
       } else if (role === "agent") {
         window.location.href = "AgentHome.html";
-      } else if (role === "admin") {
-        window.location.href = "AdminHome.html";
       } else {
         window.location.href = "Homepage.html";
       }
@@ -208,6 +208,7 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
     loginMessage.style.color = "red";
   }
 });
+
 
 
   // ====== REGISTER ======
@@ -235,7 +236,7 @@ document.getElementById("registerForm").addEventListener("submit", async (e) => 
     let extraData = {};
 
     if (role === "agent") {
-      assignedRole = "pending-agent"; // Manager will later approve
+      assignedRole = "pending-agent"; 
       extraData = { approved: false };
     }
 

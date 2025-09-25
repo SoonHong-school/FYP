@@ -1,0 +1,193 @@
+/* General Styles */
+body {
+  margin: 0;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background: #ffffff;
+  color: #000000;
+}
+
+h1, h2, h3 {
+  margin: 0 0 10px;
+}
+
+.admin-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 250px;
+  background: #000000;
+  color: #fff;
+  padding: 20px;
+  position: fixed;
+  height: 100%;
+}
+
+.sidebar .logo {
+  font-size: 1.4rem;
+  font-weight: bold;
+  margin-bottom: 30px;
+}
+
+.sidebar .menu {
+  list-style: none;
+  padding: 0;   
+  margin: 0;    
+}
+
+
+.sidebar .menu li {
+  margin: 15px 0;
+}
+
+.sidebar .menu a {
+  color: #bbb;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 6px;
+  transition: background 0.3s, color 0.3s;
+}
+
+.sidebar .menu a.active,
+.sidebar .menu a:hover {
+  background: #202020;
+  color: #fff;
+}
+
+/* Main content pushes to the right */
+.main-content {
+  margin-left: 250px;
+  padding: 30px;
+  flex-grow: 1;
+}
+
+/* Container */
+.insert-car {
+      max-width: 650px;
+      margin: 40px auto;
+      background: #fff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+    }
+    .insert-car h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .progressbar {
+      display: flex;
+      justify-content: space-between;
+      margin: 0 0 30px 0;
+      counter-reset: step;
+      padding-left: 0;
+    }
+    .progressbar li {
+      list-style: none;
+      position: relative;
+      text-align: center;
+      flex: 1;
+      font-size: 14px;
+      color: #999;
+    }
+    .progressbar li:before {
+      content: counter(step);
+      counter-increment: step;
+      width: 30px;
+      height: 30px;
+      border: 2px solid #bbb;
+      display: block;
+      margin: 0 auto 8px auto;
+      border-radius: 50%;
+      background: #fff;
+      line-height: 26px;
+      color: #bbb;
+      font-weight: bold;
+    }
+    .progressbar li:after {
+      content: "";
+      position: absolute;
+      top: 14px;
+      left: -50%;
+      width: 100%;
+      height: 2px;
+      background: #ddd;
+      z-index: -1;
+    }
+    .progressbar li:first-child:after { content: none; }
+    .progressbar li.active { color: #0066cc; }
+    .progressbar li.active:before {
+      border-color: #0066cc;
+      color: #0066cc;
+    }
+    .progressbar li.completed:before {
+      background: #0066cc;
+      color: #fff;
+      border-color: #0066cc;
+    }
+    .progressbar li.completed { color: #0066cc; }
+    .progressbar li.completed + li:after { background: #0066cc; }
+
+    .step { display: none; }
+    .step.active { display: block; animation: fadeIn 0.4s ease; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    label {
+      display: block;
+      font-weight: 600;
+      margin: 10px 0 5px;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      margin-bottom: 15px;
+      font-size: 14px;
+    }
+    .wizard-buttons {
+      text-align: right;
+    }
+    .wizard-buttons button {
+      background: #0066cc;
+      color: #fff;
+      border: none;
+      padding: 10px 18px;
+      margin-left: 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: 0.2s;
+    }
+    .wizard-buttons button:hover { background: #004999; }
+    .wizard-buttons button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    #insertMessage {
+      text-align: center;
+      margin-top: 15px;
+      font-weight: 600;
+    }
+
+    .step {
+      display: none;
+    }
+
+    .step.active {
+      display: block;
+    }
+
+    .wizard-buttons {
+      margin-top: 15px;
+    }
+
+    button {
+      margin: 5px;
+    }

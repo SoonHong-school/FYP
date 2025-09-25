@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Insert Car Wizard</title>
+  <link rel="stylesheet" href="assets/css/AdminAddCar.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+  <div class="admin-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="logo">
+        <a href="AdminHome.html">
+          <img src="assets/images/logo.png" alt="AutoCarMatch Logo" style="height:50px;">
+        </a>
+      </div>
+      <ul class="menu">
+        <li><a href="AdminHome.html"><i class="fas fa-home"></i> Dashboard</a></li>
+        <li><a href="AdminAddCar.html" class="active"><i class="fas fa-plus-circle"></i> Insert Car</a></li>
+        <li><a href="AdminManageCars.html"><i class="fas fa-cogs"></i> Manage Cars</a></li>
+        <li><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+      </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <section class="insert-car">
+        <h2>Insert New Car</h2>
+
+        <!-- Progress Bar -->
+        <ul class="progressbar">
+          <li class="active">Type</li>
+          <li>Brand</li>
+          <li>Model</li>
+          <li>Details</li>
+        </ul>
+
+        <form id="insertCarForm">
+          <!-- Step 1: Car Type -->
+          <div class="step active" data-step="1">
+            <label for="carType">Select Car Type</label>
+            <select id="carType" name="carType" required>
+              <option value="">-- Select Type --</option>
+              <option value="Petrol">Petrol</option>
+              <option value="EV">EV</option>
+              <option value="Hybrid">Hybrid</option>
+            </select>
+            <div class="wizard-buttons">
+              <button type="button" onclick="nextStep()">Next</button>
+            </div>
+          </div>
+
+          <!-- Step 2: Brand -->
+          <div class="step" data-step="2">
+            <label>Choose Brand</label>
+            <select id="brandChoice">
+              <option value="">-- Select --</option>
+              <option value="existing">Existing Brand</option>
+              <option value="new">New Brand</option>
+            </select>
+            <div id="existingBrandBox" style="display:none;">
+              <label for="existingBrand">Select Existing Brand</label>
+              <select id="existingBrand"></select>
+            </div>
+            <div id="newBrandBox" style="display:none;">
+              <label for="newBrand">New Brand Name</label>
+              <input type="text" id="newBrand" placeholder="e.g. Tesla" />
+            </div>
+            <div class="wizard-buttons">
+              <button type="button" onclick="prevStep()">Back</button>
+              <button type="button" onclick="nextStep()">Next</button>
+            </div>
+          </div>
+
+          <!-- Step 3: Model -->
+          <div class="step" data-step="3">
+            <label>Choose Model</label>
+            <select id="modelChoice">
+              <option value="">-- Select --</option>
+              <option value="new">New Model</option>
+            </select>
+            <div id="newModelBox">
+              <label for="newModel">New Model Name</label>
+              <input type="text" id="newModel" placeholder="e.g. Corolla Altis" />
+            </div>
+            <div class="wizard-buttons">
+              <button type="button" onclick="prevStep()">Back</button>
+              <button type="button" onclick="nextStep()">Next</button>
+            </div>
+          </div>
+
+          <!-- Step 4: Details -->
+          <div class="step" data-step="4">
+            <label for="carYear">Manufacture Year</label>
+            <input type="number" id="carYear" min="1980" max="2099" required>
+
+            <label for="carPrice">Price (RM)</label>
+            <input type="number" id="carPrice" min="1000" required>
+
+            <label for="carTransmission">Transmission</label>
+            <select id="carTransmission" required>
+              <option value="">-- Select Transmission --</option>
+              <option value="Automatic">Automatic</option>
+              <option value="Manual">Manual</option>
+            </select>
+
+            <label for="carSeats">Seats</label>
+            <select id="carSeats" required>
+              <option value="">-- Select Seats --</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+            </select>
+
+            <label for="carMileage">Mileage (km)</label>
+            <input type="number" id="carMileage" min="0" required>
+
+            <label for="carColor">Color</label>
+            <input type="text" id="carColor" placeholder="e.g. Red, Black, White" required>
+
+            <label for="carDescription">Description</label>
+            <input type="text" id="carDescription" placeholder="Input the text here" required>
+
+            <label for="carImages">Upload Car Images (max 30)</label>
+            <input type="file" id="carImages" accept="image/*" multiple required>
+            <div id="imagePreview" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;"></div>
+
+            <div class="wizard-buttons">
+              <button type="button" onclick="prevStep()">Back</button>
+              <button type="submit">Add Car</button>
+            </div>
+          </div>
+        </form>
+
+        <p id="insertMessage"></p>
+      </section>
+
+      <!-- Firebase + Cloudinary Logic -->
+      <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyD882u-zk7FB3YMwL0Nm3_VYD4xsCMt6cQ",
+          authDomain: "carlisting-f88f2.firebaseapp.com",
+          projectId: "carlisting-f88f2",
+          storageBucket: "carlisting-f88f2.appspot.com",
+          messagingSenderId: "49221518207",
+          appId: "1:49221518207:web:c5e2fd962b802322bfd04a",
+          measurementId: "G-EMFC5Q8FZ5"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Cloudinary config
+        const CLOUD_NAME = "dwxsc3aec";       // 🔹 Replace with your Cloudinary cloud name
+        const UPLOAD_PRESET = "unsigned_preset"; // 🔹 Replace with your unsigned preset
+
+        let currentStep = 1;
+        function showStep(step) {
+          document.querySelectorAll(".step").forEach(div => div.classList.remove("active"));
+          document.querySelector(`.step[data-step="${step}"]`).classList.add("active");
+          updateProgress(step);
+          currentStep = step;
+        }
+        window.nextStep = () => showStep(currentStep + 1);
+        window.prevStep = () => showStep(currentStep - 1);
+
+        function updateProgress(step) {
+          const items = document.querySelectorAll(".progressbar li");
+          items.forEach((li, i) => {
+            li.classList.remove("active", "completed");
+            if (i < step - 1) li.classList.add("completed");
+            if (i === step - 1) li.classList.add("active");
+          });
+        }
+
+        // Toggle existing/new brand
+        document.getElementById("brandChoice").addEventListener("change", async (e) => {
+          if (e.target.value === "existing") {
+            document.getElementById("existingBrandBox").style.display = "block";
+            document.getElementById("newBrandBox").style.display = "none";
+            const snap = await getDocs(collection(db, "brands"));
+            let sel = document.getElementById("existingBrand");
+            sel.innerHTML = snap.docs.map(d => `<option value="${d.data().name}">${d.data().name}</option>`).join("");
+          } else if (e.target.value === "new") {
+            document.getElementById("newBrandBox").style.display = "block";
+            document.getElementById("existingBrandBox").style.display = "none";
+          } else {
+            document.getElementById("newBrandBox").style.display = "none";
+            document.getElementById("existingBrandBox").style.display = "none";
+          }
+        });
+
+        // Preview uploaded images
+        document.getElementById("carImages").addEventListener("change", (e) => {
+          const files = Array.from(e.target.files).slice(0, 30);
+          const preview = document.getElementById("imagePreview");
+          preview.innerHTML = "";
+          files.forEach(file => {
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+              let img = document.createElement("img");
+              img.src = ev.target.result;
+              img.style.width = "80px";
+              img.style.height = "60px";
+              img.style.objectFit = "cover";
+              img.style.borderRadius = "6px";
+              preview.appendChild(img);
+            };
+            reader.readAsDataURL(file);
+          });
+        });
+
+        // Submit form
+        document.getElementById("insertCarForm").addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const msg = document.getElementById("insertMessage");
+
+          let type = document.getElementById("carType").value;
+          let brand = document.getElementById("brandChoice").value === "existing" ? document.getElementById("existingBrand").value : document.getElementById("newBrand").value;
+          let model = document.getElementById("newModel").value;
+          let year = parseInt(document.getElementById("carYear").value);
+          let price = parseFloat(document.getElementById("carPrice").value);
+          let transmission = document.getElementById("carTransmission").value;
+          let seats = parseInt(document.getElementById("carSeats").value);
+          let mileage = parseInt(document.getElementById("carMileage").value);
+          let color = document.getElementById("carColor").value.trim();
+          let description = document.getElementById("carDescription").value.trim();
+
+          let files = Array.from(document.getElementById("carImages").files).slice(0, 30);
+          if (files.length === 0) {
+            msg.textContent = "❌ Please upload at least one image";
+            msg.style.color = "red";
+            return;
+          }
+
+          msg.textContent = "⏳ Uploading images to Cloudinary...";
+          msg.style.color = "blue";
+
+          try {
+            // Upload to Cloudinary
+            let uploadedUrls = [];
+            for (let file of files) {
+              const formData = new FormData();
+              formData.append("file", file);
+              formData.append("upload_preset", UPLOAD_PRESET);
+
+              const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+                method: "POST",
+                body: formData
+              });
+              const data = await res.json();
+              uploadedUrls.push(data.secure_url);
+            }
+
+            // Save brand if not exists
+            const brandQuery = query(collection(db, "brands"), where("name", "==", brand));
+            const brandSnap = await getDocs(brandQuery);
+            if (brandSnap.empty) {
+              await addDoc(collection(db, "brands"), { name: brand, createdAt: serverTimestamp() });
+            }
+
+            // Save model
+            await addDoc(collection(db, "models"), { name: model, brand: brand, createdAt: serverTimestamp() });
+
+            // Save car details
+            await addDoc(collection(db, "cars"), {
+              type, brand, model, year, price,
+              transmission, seats, mileage, color, description,
+              images: uploadedUrls,   // ✅ Cloudinary URLs
+              createdAt: serverTimestamp()
+            });
+
+            msg.textContent = "✅ Car, brand, model and images added successfully!";
+            msg.style.color = "green";
+            document.getElementById("insertCarForm").reset();
+            document.getElementById("imagePreview").innerHTML = "";
+            showStep(1);
+          } catch (err) {
+            msg.textContent = "❌ " + err.message;
+            msg.style.color = "red";
+          }
+        });
+      </script>
+</body>
+</html>

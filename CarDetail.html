@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Details | AutoCarMatch</title>
+    <link rel="stylesheet" href="assets/css/CarDetail.css">
+    <link rel="stylesheet" href="assets/css/Footer.css">
+</head>
+
+<body>
+    <div id="navbar"></div>
+
+    <div class="detail-container">
+
+        <!-- Image Gallery -->
+        <section class="car-section image-gallery">
+            <div class="main-image">
+                <img id="currentImage" src="assets/images/no-image.png" alt="Car">
+            </div>
+            <div class="thumbnails" id="thumbnails"></div>
+        </section>
+
+        <!-- Car Info -->
+        <section class="car-section car-info">
+            <h1 id="carTitle">Loading...</h1>
+            <h3 class="price" id="carPrice"></h3>
+        </section>
+
+        <!-- Overview Section -->
+        <section class="car-section car-overview">
+            <h2>Overview</h2>
+            <div class="overview-badges">
+                <div class="badge">✔ 1-Year Warranty</div>
+                <div class="badge">✔ 5-Day Money-back Guarantee</div>
+                <div class="badge">✔ Quality Cars Guaranteed</div>
+            </div>
+            <div class="overview-info">
+                <div><strong>Mileage:</strong> <span id="carMileage"></span></div>
+                <div><strong>Transmission:</strong> <span id="carTransmission"></span></div>
+                <div><strong>Year:</strong> <span id="carYear"></span></div>
+                <div><strong>Seats:</strong> <span id="carSeats"></span></div>
+                <div><strong>Color:</strong> <span id="carColor"></span></div>
+            </div>
+        </section>
+
+        <!-- Inspection Report -->
+        <section class="car-section inspection-report">
+            <h2>Inspection Report</h2>
+            <p>This car has passed a <strong>175-point inspection</strong> process.</p>
+            <div class="inspection-grid">
+                <div class="inspection-card">65/65 Exterior ✅</div>
+                <div class="inspection-card">66/66 Interior ✅</div>
+                <div class="inspection-card">12/12 Road Test ✅</div>
+                <div class="inspection-card">17/17 Undercarriage ✅</div>
+            </div>
+        </section>
+
+        <!-- Car Details Tabs -->
+        <section class="car-section car-details-tabs">
+            <div class="tab-header">
+                <button class="tab-btn active" onclick="openTab(event,'details')">Car Details</button>
+                <button class="tab-btn" onclick="openTab(event,'specs')">Specifications</button>
+            </div>
+            <div id="details" class="tab-content active">
+                <p><strong>Brand:</strong> <span id="carBrand"></span></p>
+                <p><strong>Model:</strong> <span id="carModel"></span></p>
+                <p><strong>Description:</strong> <span id="carDescription"></span></p>
+            </div>
+            <div id="specs" class="tab-content">
+                <p>⚙ Engine: 2.0L Turbo (Example)</p>
+                <p>📏 Dimensions: 4,500mm x 1,800mm x 1,600mm</p>
+                <p>🛡 Safety: ABS, Airbags, Lane Assist</p>
+            </div>
+        </section>
+
+        <!-- Financing -->
+        <section class="car-section financing">
+            <h2>Financing</h2>
+            <div class="loan-box">
+                <p><strong>Car Price:</strong> RM <span id="carPriceValue"></span></p>
+                <label>Down Payment (%):</label>
+                <input type="number" id="downPayment" value="10"> %
+                <label>Loan Tenure:</label>
+                <input type="number" id="loanTenure" value="9"> years
+                <p><strong>Estimated Monthly:</strong> RM <span id="monthlyPayment"></span></p>
+            </div>
+        </section>
+
+        <!-- Book Button -->
+        <section class="car-section">
+            <button class="buy-btn">Book Now</button>
+        </section>
+
+    </div>
+
+
+    <div id="footer"></div>
+
+    <!-- Firebase SDK + Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyD882u-zk7FB3YMwL0Nm3_VYD4xsCMt6cQ",
+            authDomain: "carlisting-f88f2.firebaseapp.com",
+            projectId: "carlisting-f88f2",
+            storageBucket: "carlisting-f88f2.appspot.com",
+            messagingSenderId: "49221518207",
+            appId: "1:49221518207:web:c5e2fd962b802322bfd04a"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const carId = urlParams.get("id");
+
+        async function loadCar() {
+            if (!carId) {
+                document.querySelector(".car-info").innerHTML = "<h2>❌ No car selected!</h2>";
+                return;
+            }
+
+            const carRef = doc(db, "cars", carId);
+            const carSnap = await getDoc(carRef);
+
+            if (!carSnap.exists()) {
+                document.querySelector(".car-info").innerHTML = "<h2>❌ Car not found!</h2>";
+                return;
+            }
+
+            const car = carSnap.data();
+
+            document.getElementById("carTitle").innerText = `${car.year} ${car.brand} ${car.model}`;
+            document.getElementById("carPrice").innerText = `RM ${car.price.toLocaleString()}`;
+            document.getElementById("carPriceValue").innerText = car.price.toLocaleString();
+            document.getElementById("carBrand").innerText = car.brand;
+            document.getElementById("carModel").innerText = car.model;
+            document.getElementById("carYear").innerText = car.year;
+            document.getElementById("carTransmission").innerText = car.transmission || "N/A";
+            document.getElementById("carSeats").innerText = car.seats || "N/A";
+            document.getElementById("carMileage").innerText = car.mileage ? `${car.mileage.toLocaleString()} km` : "N/A";
+            document.getElementById("carColor").innerText = car.color || "N/A";
+            document.getElementById("carDescription").innerText = car.description || "No description provided.";
+
+            if (car.images && car.images.length > 0) {
+                document.getElementById("currentImage").src = car.images[0];
+                const thumbs = document.getElementById("thumbnails");
+                car.images.forEach(img => {
+                    const thumb = document.createElement("img");
+                    thumb.src = img;
+                    thumb.onclick = () => {
+                        document.getElementById("currentImage").src = img;
+                    };
+                    thumbs.appendChild(thumb);
+                });
+            }
+        }
+
+        loadCar();
+
+        // Financing Calculator
+        const downInput = document.getElementById("downPayment");
+        const tenureInput = document.getElementById("loanTenure");
+        const monthlyOut = document.getElementById("monthlyPayment");
+
+        function calcLoan() {
+            const price = parseFloat(document.getElementById("carPriceValue").innerText.replace(/,/g, ""));
+            const down = parseFloat(downInput.value) / 100 * price;
+            const loan = price - down;
+            const months = tenureInput.value * 12;
+            const monthly = Math.round(loan / months);
+            monthlyOut.innerText = monthly.toLocaleString();
+        }
+
+        downInput.addEventListener("input", calcLoan);
+        tenureInput.addEventListener("input", calcLoan);
+
+        // Tabs
+        window.openTab = function (evt, tabId) {
+            const contents = document.querySelectorAll(".tab-content");
+            const buttons = document.querySelectorAll(".tab-btn");
+
+            contents.forEach(c => c.classList.remove("active"));
+            buttons.forEach(b => b.classList.remove("active"));
+
+            document.getElementById(tabId).classList.add("active");
+            evt.currentTarget.classList.add("active");
+        };
+    </script>
+
+    <!-- Scripts -->
+    <script type="module">
+        import { loadNavbar } from "./assets/js/Navbar.js";
+        loadNavbar();
+    </script>
+    <script type="module">
+        import { loadFooter } from "./assets/js/Footer.js";
+        loadFooter();
+    </script>
+</body>
+
+</html>
