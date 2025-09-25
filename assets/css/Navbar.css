@@ -97,23 +97,30 @@
     flex-direction: column;
     gap: 0;
     background: #222;
+    width: 100%;
   }
 
   .nav-links li {
     width: 100%;
-    text-align: left;
+    border-top: 1px solid #333;
   }
 
   .nav-links a {
     display: block;
     width: 100%;
-    padding: 12px 20px;
+    padding: 14px 20px;
   }
 
   /* Mobile dropdown menus expand inline */
   .dropdown-menu {
+    display: none;
     position: static;
     background: #333;
     border-radius: 0;
+    padding-left: 10px;
+  }
+
+  .dropdown.active .dropdown-menu {
+    display: block;
   }
 }

@@ -19,30 +19,28 @@
     <!-- Filter Box -->
     <div class="filter-box">
       <h3>Find new & used cars for sale</h3>
-      <select id="filterCondition">
-        <option value="">All Condition</option>
+
+      <!-- Car Type -->
+      <select id="filterType">
+        <option value="">Select Type</option>
+        <option value="EV">EV</option>
+        <option value="Petrol">Petrol</option>
       </select>
 
+      <!-- Brand -->
       <select id="filterBrand">
         <option value="">All Brands</option>
       </select>
 
-      <select id="filterModel">
-        <option value="">All Models</option>
-      </select>
+      <!-- Price Range -->
+      <label for="filterPrice">Price Range (RM)</label>
+      <input type="range" id="filterPrice" min="10000" max="200000" step="5000" value="100000" />
+      <span id="priceValue">RM100,000</span>
 
-      <select id="filterState">
-        <option value="">All States</option>
+      <!-- Year -->
+      <select id="filterYear">
+        <option value="">All Years</option>
       </select>
-
-      <select id="filterPrice">
-        <option value="">All Prices</option>
-        <option value="below50">Below RM50k</option>
-        <option value="50to100">RM50k - RM100k</option>
-        <option value="above100">Above RM100k</option>
-      </select>
-
-      <input type="text" id="filterSearch" placeholder="What car are you looking for?">
 
       <button class="btn-search" id="btnSearch">Search</button>
       <a href="#" class="advanced-search">Advanced search »</a>
@@ -80,7 +78,7 @@
   <script type="module">
     // Import Firebase
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getFirestore, collection, query, orderBy, limit, getDocs, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getFirestore, collection, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     // Firebase config
     const firebaseConfig = {
@@ -98,24 +96,24 @@
 
     const carGrid = document.getElementById("carGrid");
 
-    // Load Latest Cars
+    // Load Latest Cars (always 4)
     async function loadLatestCars() {
       carGrid.innerHTML = "<p>Loading cars...</p>";
 
       const q = query(
         collection(db, "cars"),
         orderBy("createdAt", "desc"),
-        limit(6)
+        limit(4)
       );
 
       const snap = await getDocs(q);
+      carGrid.innerHTML = "";
 
       if (snap.empty) {
         carGrid.innerHTML = "<p>❌ No cars found</p>";
         return;
       }
 
-      carGrid.innerHTML = "";
       snap.forEach(doc => {
         const car = doc.data();
         const card = document.createElement("div");
@@ -135,23 +133,17 @@
       const q = query(collection(db, "cars"));
       const snap = await getDocs(q);
 
-      const conditions = new Set();
       const brands = new Set();
-      const states = new Set();
-      const models = new Set();
+      const years = new Set();
 
       snap.forEach(doc => {
         const car = doc.data();
-        if (car.condition) conditions.add(car.condition);
         if (car.brand) brands.add(car.brand);
-        if (car.state) states.add(car.state);
-        if (car.model) models.add(car.model);
+        if (car.year) years.add(car.year);
       });
 
-      fillSelect("filterCondition", conditions);
       fillSelect("filterBrand", brands);
-      fillSelect("filterState", states);
-      fillSelect("filterModel", models);
+      fillSelect("filterYear", years);
     }
 
     function fillSelect(id, items) {
@@ -164,49 +156,29 @@
       });
     }
 
-    // Search Function
-    document.getElementById("btnSearch").addEventListener("click", async () => {
-      const condition = document.getElementById("filterCondition").value;
+    // Price slider value update
+    document.getElementById("filterPrice").addEventListener("input", (e) => {
+      document.getElementById("priceValue").textContent = "RM" + parseInt(e.target.value).toLocaleString();
+    });
+
+    // Redirect to CarListing page
+    document.getElementById("btnSearch").addEventListener("click", () => {
+      const type = document.getElementById("filterType").value;
       const brand = document.getElementById("filterBrand").value;
-      const model = document.getElementById("filterModel").value;
-      const state = document.getElementById("filterState").value;
       const price = document.getElementById("filterPrice").value;
-      const searchText = document.getElementById("filterSearch").value.toLowerCase();
+      const year = document.getElementById("filterYear").value;
 
-      let constraints = [];
+      if (!type) {
+        alert("Please select EV or Petrol first!");
+        return;
+      }
 
-      if (condition) constraints.push(where("condition", "==", condition));
-      if (brand) constraints.push(where("brand", "==", brand));
-      if (model) constraints.push(where("model", "==", model));
-      if (state) constraints.push(where("state", "==", state));
+      // Choose page based on type
+      const page = type === "EV" ? "EvCar.html" : "PetrolCar.html";
 
-      let q = query(collection(db, "cars"), ...constraints, orderBy("createdAt", "desc"), limit(12));
-      const snap = await getDocs(q);
-
-      carGrid.innerHTML = snap.empty ? "<p>No cars match your filter.</p>" : "";
-
-      snap.forEach(doc => {
-        const car = doc.data();
-
-        // Price filter (done in frontend because Firestore range queries are limited)
-        if (price === "below50" && car.price > 50000) return;
-        if (price === "50to100" && (car.price < 50000 || car.price > 100000)) return;
-        if (price === "above100" && car.price < 100000) return;
-
-        // Text search
-        const name = `${car.brand} ${car.model}`.toLowerCase();
-        if (searchText && !name.includes(searchText)) return;
-
-        const card = document.createElement("div");
-        card.className = "car-card";
-        card.innerHTML = `
-          <img src="${car.images?.[0] || "assets/images/no-image.png"}" alt="${car.model}">
-          <h3>${car.brand} ${car.model}</h3>
-          <p>Year: ${car.year} | Price: RM${car.price.toLocaleString()}</p>
-          <button onclick="window.location.href='car_detail.html?id=${doc.id}'">View Details</button>
-        `;
-        carGrid.appendChild(card);
-      });
+      // Redirect with query params
+      const params = new URLSearchParams({ brand, price, year });
+      window.location.href = `${page}?${params.toString()}`;
     });
 
     // Init

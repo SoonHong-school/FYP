@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Browse Cars | AutoCarMatch</title>
+  <title>Browse EV Cars | AutoCarMatch</title>
   <link rel="stylesheet" href="assets/css/CarListing.css">
   <link rel="stylesheet" href="assets/css/Footer.css">
 </head>
@@ -14,7 +14,7 @@
 
   <!-- Filters -->
   <div class="filters">
-    <h2>Filter Cars</h2>
+    <h2>Filter EV Cars</h2>
     <div class="filter-row">
       <label>Brand:</label>
       <select id="filterBrand">
@@ -89,26 +89,50 @@
     const db = getFirestore(app);
 
     const carGrid = document.getElementById("carGrid");
+    const filterBrand = document.getElementById("filterBrand");
+    const filterModel = document.getElementById("filterModel");
+    const filterYear = document.getElementById("filterYear");
+    const filterTransmission = document.getElementById("filterTransmission");
+    const filterSeats = document.getElementById("filterSeats");
+    const filterColor = document.getElementById("filterColor");
+    const minPrice = document.getElementById("minPrice");
+    const maxPrice = document.getElementById("maxPrice");
+    const minMileage = document.getElementById("minMileage");
+    const maxMileage = document.getElementById("maxMileage");
+
+    let allCars = [];
+
+    // ✅ Get query params from homepage
+    const params = new URLSearchParams(window.location.search);
+    const paramBrand = params.get("brand") || "";
+    const paramPrice = params.get("price") || "";
+    const paramYear = params.get("year") || "";
 
     async function loadCars() {
-      carGrid.innerHTML = "<p>Loading Petrol cars...</p>";
+      carGrid.innerHTML = "<p>Loading EV cars...</p>";
 
-      // Only get Petrol cars
       const q = query(collection(db, "cars"), where("type", "==", "Petrol"));
       const carsSnap = await getDocs(q);
 
-      let cars = [];
+      allCars = [];
       carsSnap.forEach(doc => {
-        cars.push({ id: doc.id, ...doc.data() });
+        allCars.push({ id: doc.id, ...doc.data() });
       });
 
-      displayCars(cars);
-      populateFilterOptions(cars);
+      populateFilterOptions(allCars);
+
+      // ✅ Pre-fill filters with query params
+      if (paramBrand) filterBrand.value = paramBrand;
+      if (paramYear) filterYear.value = paramYear;
+      if (paramPrice) maxPrice.value = paramPrice;
+
+      // ✅ Apply filters immediately
+      applyFilters();
     }
 
     function displayCars(cars) {
       if (cars.length === 0) {
-        carGrid.innerHTML = "<p>❌ No Petrol cars found.</p>";
+        carGrid.innerHTML = "<p>❌ No EV cars found.</p>";
         return;
       }
 
@@ -122,24 +146,20 @@
         const carCard = document.createElement("div");
         carCard.className = "car-card";
         carCard.innerHTML = `
-      <img src="${car.images?.[0] || 'assets/images/no-image.png'}" alt="${car.brand} ${car.model}">
-      <h3>${car.year} ${car.brand} ${car.model}</h3>
-
-      <div class="monthly-price">
-        RM ${monthly.toFixed(0)}/mo <span class="info-icon" title="10% Down Payment • 9 Years Loan Tenure">ℹ️</span>
-      </div>
-
-      <p class="price">Car Price: RM ${price?.toLocaleString() || 'N/A'}</p>
-      <p>${car.transmission || ''} | ${car.seats || ''} Seats | ${car.color || ''}</p>
-      <button onclick="window.location.href='CarDetail.html?id=${car.id}'">View Details</button>
-    `;
+          <img src="${car.images?.[0] || 'assets/images/no-image.png'}" alt="${car.brand} ${car.model}">
+          <h3>${car.year} ${car.brand} ${car.model}</h3>
+          <div class="monthly-price">
+            RM ${monthly.toFixed(0)}/mo <span class="info-icon" title="10% Down Payment • 9 Years Loan Tenure">ℹ️</span>
+          </div>
+          <p class="price">Car Price: RM ${price?.toLocaleString() || 'N/A'}</p>
+          <p>${car.transmission || ''} | ${car.seats || ''} Seats | ${car.color || ''}</p>
+          <button onclick="window.location.href='CarDetail.html?id=${car.id}'">View Details</button>
+        `;
         carGrid.appendChild(carCard);
       });
     }
 
-
     function populateFilterOptions(cars) {
-      // Populate dropdown filters (brand, model, year) only from Petrol cars
       let brands = new Set();
       let models = new Set();
       let years = new Set();
@@ -150,19 +170,33 @@
         if (car.year) years.add(car.year);
       });
 
-      document.getElementById("filterBrand").innerHTML =
-        `<option value="">All</option>` + [...brands].map(b => `<option value="${b}">${b}</option>`).join("");
-
-      document.getElementById("filterModel").innerHTML =
-        `<option value="">All</option>` + [...models].map(m => `<option value="${m}">${m}</option>`).join("");
-
-      document.getElementById("filterYear").innerHTML =
-        `<option value="">All</option>` + [...years].map(y => `<option value="${y}">${y}</option>`).join("");
+      filterBrand.innerHTML = `<option value="">All</option>` + [...brands].map(b => `<option value="${b}">${b}</option>`).join("");
+      filterModel.innerHTML = `<option value="">All</option>` + [...models].map(m => `<option value="${m}">${m}</option>`).join("");
+      filterYear.innerHTML = `<option value="">All</option>` + [...years].map(y => `<option value="${y}">${y}</option>`).join("");
     }
+
+    function applyFilters() {
+      let filtered = allCars.filter(car => {
+        return (
+          (!filterBrand.value || car.brand === filterBrand.value) &&
+          (!filterModel.value || car.model === filterModel.value) &&
+          (!filterYear.value || car.year == filterYear.value) &&
+          (!filterTransmission.value || car.transmission === filterTransmission.value) &&
+          (!filterSeats.value || car.seats == filterSeats.value) &&
+          (!filterColor.value || car.color?.toLowerCase().includes(filterColor.value.toLowerCase())) &&
+          (!minPrice.value || car.price >= parseFloat(minPrice.value)) &&
+          (!maxPrice.value || car.price <= parseFloat(maxPrice.value)) &&
+          (!minMileage.value || car.mileage >= parseFloat(minMileage.value)) &&
+          (!maxMileage.value || car.mileage <= parseFloat(maxMileage.value))
+        );
+      });
+      displayCars(filtered);
+    }
+
+    document.getElementById("applyFilters").addEventListener("click", applyFilters);
 
     loadCars();
   </script>
-
 
   <!-- Navbar & Footer -->
   <script type="module">
@@ -174,5 +208,4 @@
     loadFooter();
   </script>
 </body>
-
 </html>

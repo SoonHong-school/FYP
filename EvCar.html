@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Browse Cars | AutoCarMatch</title>
+  <title>Browse EV Cars | AutoCarMatch</title>
   <link rel="stylesheet" href="assets/css/CarListing.css">
   <link rel="stylesheet" href="assets/css/Footer.css">
 </head>
@@ -14,52 +14,73 @@
 
   <!-- Filters -->
   <div class="filters">
-    <h2>Filter Cars</h2>
+    <h2>Filter EV Cars</h2>
     <div class="filter-row">
-      <label>Brand:</label>
-      <select id="filterBrand">
-        <option value="">All</option>
-      </select>
+      <div class="filter-group">
+        <label>Brand:</label>
+        <select id="filterBrand">
+          <option value="">All</option>
+        </select>
+      </div>
 
-      <label>Model:</label>
-      <select id="filterModel">
-        <option value="">All</option>
-      </select>
+      <div class="filter-group">
+        <label>Model:</label>
+        <select id="filterModel">
+          <option value="">All</option>
+        </select>
+      </div>
 
-      <label>Year:</label>
-      <select id="filterYear">
-        <option value="">All</option>
-      </select>
+      <div class="filter-group">
+        <label>Year:</label>
+        <select id="filterYear">
+          <option value="">All</option>
+        </select>
+      </div>
 
-      <label>Transmission:</label>
-      <select id="filterTransmission">
-        <option value="">All</option>
-        <option value="Automatic">Automatic</option>
-        <option value="Manual">Manual</option>
-      </select>
+      <div class="filter-group">
+        <label>Transmission:</label>
+        <select id="filterTransmission">
+          <option value="">All</option>
+          <option value="Automatic">Automatic</option>
+          <option value="Manual">Manual</option>
+        </select>
+      </div>
     </div>
 
     <div class="filter-row">
-      <label>Seats:</label>
-      <select id="filterSeats">
-        <option value="">All</option>
-        <option value="2">2</option>
-        <option value="4">4</option>
-        <option value="5">5</option>
-        <option value="6">6</option>
-      </select>
+      <div class="filter-group">
+        <label>Seats:</label>
+        <select id="filterSeats">
+          <option value="">All</option>
+          <option value="2">2</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+        </select>
+      </div>
 
-      <label>Color:</label>
-      <input type="text" id="filterColor" placeholder="e.g. Red">
+      <div class="filter-group">
+        <label>Color:</label>
+        <input type="text" id="filterColor" placeholder="e.g. Red">
+      </div>
 
-      <label>Price Range:</label>
-      <input type="number" id="minPrice" placeholder="Min RM">
-      <input type="number" id="maxPrice" placeholder="Max RM">
+      <div class="filter-group">
+        <label>Price Range:</label>
+        <div class="range-inputs">
+          <input type="number" id="minPrice" placeholder="Min RM">
+          <input type="number" id="maxPrice" placeholder="Max RM">
+        </div>
+      </div>
 
-      <label>Mileage Range:</label>
-      <input type="number" id="minMileage" placeholder="Min KM">
-      <input type="number" id="maxMileage" placeholder="Max KM">
+      <div class="filter-group">
+        <label>Mileage Range:</label>
+        <div class="range-inputs">
+          <input type="number" id="minMileage" placeholder="Min KM">
+          <input type="number" id="maxMileage" placeholder="Max KM">
+        </div>
+      </div>
     </div>
+
 
     <button id="applyFilters">Apply Filters</button>
   </div>
@@ -100,12 +121,17 @@
     const minMileage = document.getElementById("minMileage");
     const maxMileage = document.getElementById("maxMileage");
 
-    let allCars = []; // keep all EV cars here
+    let allCars = [];
+
+    // ✅ Get query params from homepage
+    const params = new URLSearchParams(window.location.search);
+    const paramBrand = params.get("brand") || "";
+    const paramPrice = params.get("price") || "";
+    const paramYear = params.get("year") || "";
 
     async function loadCars() {
       carGrid.innerHTML = "<p>Loading EV cars...</p>";
 
-      // Only get EV cars
       const q = query(collection(db, "cars"), where("type", "==", "EV"));
       const carsSnap = await getDocs(q);
 
@@ -114,8 +140,15 @@
         allCars.push({ id: doc.id, ...doc.data() });
       });
 
-      displayCars(allCars);
       populateFilterOptions(allCars);
+
+      // ✅ Pre-fill filters with query params
+      if (paramBrand) filterBrand.value = paramBrand;
+      if (paramYear) filterYear.value = paramYear;
+      if (paramPrice) maxPrice.value = paramPrice;
+
+      // ✅ Apply filters immediately
+      applyFilters();
     }
 
     function displayCars(cars) {
@@ -134,17 +167,15 @@
         const carCard = document.createElement("div");
         carCard.className = "car-card";
         carCard.innerHTML = `
-      <img src="${car.images?.[0] || 'assets/images/no-image.png'}" alt="${car.brand} ${car.model}">
-      <h3>${car.year} ${car.brand} ${car.model}</h3>
-
-      <div class="monthly-price">
-        RM ${monthly.toFixed(0)}/mo <span class="info-icon" title="10% Down Payment • 9 Years Loan Tenure">ℹ️</span>
-      </div>
-
-      <p class="price">Car Price: RM ${price?.toLocaleString() || 'N/A'}</p>
-      <p>${car.transmission || ''} | ${car.seats || ''} Seats | ${car.color || ''}</p>
-      <button onclick="window.location.href='CarDetail.html?id=${car.id}'">View Details</button>
-    `;
+          <img src="${car.images?.[0] || 'assets/images/no-image.png'}" alt="${car.brand} ${car.model}">
+          <h3>${car.year} ${car.brand} ${car.model}</h3>
+          <div class="monthly-price">
+            RM ${monthly.toFixed(0)}/mo <span class="info-icon" title="10% Down Payment • 9 Years Loan Tenure">ℹ️</span>
+          </div>
+          <p class="price">Car Price: RM ${price?.toLocaleString() || 'N/A'}</p>
+          <p>${car.transmission || ''} | ${car.seats || ''} Seats | ${car.color || ''}</p>
+          <button onclick="window.location.href='CarDetail.html?id=${car.id}'">View Details</button>
+        `;
         carGrid.appendChild(carCard);
       });
     }
