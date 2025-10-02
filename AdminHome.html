@@ -129,32 +129,31 @@
         async function loadStats() {
           const carsSnap = await getDocs(collection(db, "cars"));
           let brands = new Set();
-          let ev = 0, petrol = 0, hybrid = 0;
+          const carCounts = {}; // dynamic count by type
 
           carsSnap.forEach(doc => {
             const car = doc.data();
             if (car.brand) brands.add(car.brand);
-            if (car.type === "ev") ev++;
-            if (car.type === "petrol") petrol++;
-            if (car.type === "hybrid") hybrid++;
+            const type = car.type ? car.type.toLowerCase() : "unknown";
+            carCounts[type] = (carCounts[type] || 0) + 1;
           });
 
           document.getElementById("totalCars").textContent = carsSnap.size;
           document.getElementById("totalBrands").textContent = brands.size;
-          document.getElementById("evCars").textContent = ev;
-          document.getElementById("petrolCars").textContent = petrol;
-          document.getElementById("hybridCars").textContent = hybrid;
+          document.getElementById("evCars").textContent = carCounts["ev"] || 0;
+          document.getElementById("petrolCars").textContent = carCounts["petrol"] || 0;
+          document.getElementById("hybridCars").textContent = carCounts["hybrid"] || 0;
 
-          // Chart
+          // Chart.js dynamic chart
           const ctx = document.getElementById("carsChart");
           if (carsChart) carsChart.destroy();
           carsChart = new Chart(ctx, {
             type: "pie",
             data: {
-              labels: ["EV", "Petrol", "Hybrid"],
+              labels: Object.keys(carCounts).map(k => k.charAt(0).toUpperCase() + k.slice(1)),
               datasets: [{
-                data: [ev, petrol, hybrid],
-                backgroundColor: ["#4CAF50", "#2196F3", "#FFC107"]
+                data: Object.values(carCounts),
+                backgroundColor: ["#4CAF50", "#2196F3", "#FFC107", "#9C27B0", "#FF5722"]
               }]
             }
           });

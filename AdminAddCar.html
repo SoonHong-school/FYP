@@ -47,7 +47,6 @@
               <option value="">-- Select Type --</option>
               <option value="Petrol">Petrol</option>
               <option value="EV">EV</option>
-              <option value="Hybrid">Hybrid</option>
             </select>
             <div class="wizard-buttons">
               <button type="button" onclick="nextStep()">Next</button>
@@ -159,9 +158,8 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Cloudinary config
-        const CLOUD_NAME = "dwxsc3aec";       // 🔹 Replace with your Cloudinary cloud name
-        const UPLOAD_PRESET = "unsigned_preset"; // 🔹 Replace with your unsigned preset
+        const CLOUD_NAME = "dwxsc3aec";       
+        const UPLOAD_PRESET = "unsigned_preset"; 
 
         let currentStep = 1;
         function showStep(step) {
@@ -199,21 +197,39 @@
           }
         });
 
-        // Preview uploaded images
+        // Preview uploaded images with order selection
         document.getElementById("carImages").addEventListener("change", (e) => {
           const files = Array.from(e.target.files).slice(0, 30);
           const preview = document.getElementById("imagePreview");
           preview.innerHTML = "";
-          files.forEach(file => {
+
+          files.forEach((file, index) => {
             const reader = new FileReader();
             reader.onload = (ev) => {
-              let img = document.createElement("img");
+              const div = document.createElement("div");
+              div.style.display = "flex";
+              div.style.flexDirection = "column";
+              div.style.alignItems = "center";
+              div.style.gap = "4px";
+
+              const img = document.createElement("img");
               img.src = ev.target.result;
               img.style.width = "80px";
               img.style.height = "60px";
               img.style.objectFit = "cover";
               img.style.borderRadius = "6px";
-              preview.appendChild(img);
+              div.appendChild(img);
+
+              const orderInput = document.createElement("input");
+              orderInput.type = "number";
+              orderInput.min = 1;
+              orderInput.max = files.length;
+              orderInput.value = index + 1;
+              orderInput.style.width = "50px";
+              orderInput.dataset.index = index; // original file index
+              div.appendChild(orderInput);
+
+              preview.appendChild(div);
             };
             reader.readAsDataURL(file);
           });
@@ -242,11 +258,18 @@
             return;
           }
 
+          // Sort files based on order input
+          const orderInputs = Array.from(document.querySelectorAll("#imagePreview input[type='number']"));
+          files.sort((a, b) => {
+            const indexA = orderInputs.find(input => input.dataset.index == files.indexOf(a)).value;
+            const indexB = orderInputs.find(input => input.dataset.index == files.indexOf(b)).value;
+            return parseInt(indexA) - parseInt(indexB);
+          });
+
           msg.textContent = "⏳ Uploading images to Cloudinary...";
           msg.style.color = "blue";
 
           try {
-            // Upload to Cloudinary
             let uploadedUrls = [];
             for (let file of files) {
               const formData = new FormData();
@@ -275,7 +298,7 @@
             await addDoc(collection(db, "cars"), {
               type, brand, model, year, price,
               transmission, seats, mileage, color, description,
-              images: uploadedUrls,   // ✅ Cloudinary URLs
+              images: uploadedUrls,   
               createdAt: serverTimestamp()
             });
 
