@@ -245,3 +245,24 @@ body {
   background: #20ba57;
   transform: scale(1.15);
 }
+
+.document-buttons {
+  display: flex;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.doc-btn {
+  display: inline-block;
+  padding: 10px 18px;
+  background: #940000;
+  color: #fff;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: background 0.3s;
+}
+
+.doc-btn:hover {
+  background: #3a0000;
+}
+

@@ -45,15 +45,13 @@
             </div>
         </section>
 
-        <!-- Inspection Report -->
+        <!-- Documents -->
         <section class="car-section inspection-report">
-            <h2>Inspection Report</h2>
-            <p>This car has passed a <strong>175-point inspection</strong> process.</p>
-            <div class="inspection-grid">
-                <div class="inspection-card">65/65 Exterior ✅</div>
-                <div class="inspection-card">66/66 Interior ✅</div>
-                <div class="inspection-card">12/12 Road Test ✅</div>
-                <div class="inspection-card">17/17 Undercarriage ✅</div>
+            <h2>Documents</h2>
+            <p>You can download the official documents for this car below:</p>
+            <div class="document-buttons">
+                <a id="pricePdfBtn" class="doc-btn" href="#" download style="display:none;">📑 Download Price PDF</a>
+                <a id="brochurePdfBtn" class="doc-btn" href="#" download style="display:none;">📑 Download Brochure</a>
             </div>
         </section>
 
@@ -92,10 +90,7 @@
             target="_blank">
             <img src="assets/images/whatsapp.png" alt="WhatsApp Icon">
         </a>
-
-
     </div>
-
 
     <div id="footer"></div>
 
@@ -118,6 +113,13 @@
 
         const urlParams = new URLSearchParams(window.location.search);
         const carId = urlParams.get("id");
+
+        // Helper: force Cloudinary download
+        function makeDownloadUrl(url, filename = "document.pdf") {
+            if (!url) return "#";
+            return url.replace("/upload/", `/upload/fl_attachment:${filename}/`);
+        }
+
 
         async function loadCar() {
             if (!carId) {
@@ -147,6 +149,20 @@
             document.getElementById("carColor").innerText = car.color || "N/A";
             document.getElementById("carDescription").innerText = car.description || "No description provided.";
 
+            // Show PDF download buttons if available
+            if (car.pricePdf) {
+                const priceBtn = document.getElementById("pricePdfBtn");
+                priceBtn.href = makeDownloadUrl(car.pricePdf);
+                priceBtn.style.display = "inline-block";
+            }
+
+            if (car.brochurePdf) {
+                const brochureBtn = document.getElementById("brochurePdfBtn");
+                brochureBtn.href = makeDownloadUrl(car.brochurePdf);
+                brochureBtn.style.display = "inline-block";
+            }
+
+            // Images
             if (car.images && car.images.length > 0) {
                 document.getElementById("currentImage").src = car.images[0];
                 const thumbs = document.getElementById("thumbnails");

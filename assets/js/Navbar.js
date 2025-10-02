@@ -1,5 +1,6 @@
 // Navbar.js
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 export function loadNavbar() {
   fetch("Navbar.html")
@@ -30,14 +31,35 @@ export function loadNavbar() {
 
       // ====== FIREBASE AUTH STATE ======
       const auth = getAuth();
-      onAuthStateChanged(auth, (user) => {
+      const db = getFirestore();
+
+      onAuthStateChanged(auth, async (user) => {
         const loginLink = document.querySelector('a[href="Login.html"]');
         if (user) {
+          let profilePicUrl = "assets/images/default-avatar.png"; // fallback
+          let displayName = user.displayName || user.email;
+
+          try {
+            const docRef = doc(db, "users", user.uid);
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+              const userData = docSnap.data();
+              if (userData.profilePic) profilePicUrl = userData.profilePic;
+              if (userData.name) displayName = userData.name;
+            }
+          } catch (err) {
+            console.error("Error fetching user data:", err);
+          }
+
           // Replace Login link with user dropdown
           if (loginLink) {
             loginLink.parentElement.outerHTML = `
               <li class="dropdown user-dropdown">
-                <a href="#" class="dropdown-toggle">👋 ${user.displayName || user.email} ▾</a>
+                <a href="#" class="dropdown-toggle user-menu">
+                  <img src="${profilePicUrl}" alt="Profile" class="nav-profile-pic">
+                  ${displayName} ▾
+                </a>
                 <ul class="dropdown-menu">
                   <li><a href="UserProfile.html">Profile</a></li>
                   <li><a href="#" id="logoutBtn">Logout</a></li>

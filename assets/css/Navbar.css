@@ -1,3 +1,5 @@
+/* assets/css/Navbar.css */
+
 /* Reset */
 * {
   margin: 0;
@@ -6,19 +8,24 @@
   font-family: Arial, sans-serif;
 }
 
+/* Page background (kept from your original) */
 body {
   margin: 0;
   font-family: Arial, sans-serif;
-  background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
-              url("../images/background_login.jpg") no-repeat center center/cover;
+  background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+    url("../images/background_login.jpg") no-repeat center center/cover;
 }
 
+/* Logo */
 .logo img {
   height: 50px;
   width: auto;
 }
 
-/* Navbar base */
+/* ==========================
+   NAVBAR
+   ========================== */
+header.navbar,
 .navbar {
   display: flex;
   justify-content: space-between;
@@ -26,97 +33,174 @@ body {
   padding: 10px 30px;
   background: #000000;
   color: white;
+
+  /* keep consistent height so items can align to the center */
+  height: 64px;
 }
 
-.navbar .logo img {
-  height: 50px;
+/* ensure logo area vertically centered */
+.navbar .logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* nav menu wrapper */
+nav#nav-menu {
+  display: block;
 }
 
 /* Nav links (desktop) */
 .nav-links {
   list-style: none;
   display: flex;
-  gap: 20px;
+  gap: 16px;
+  align-items: center;
+  /* make sure children align center horizontally */
+  height: 100%;
 }
 
+/* each list item */
 .nav-links li {
   position: relative;
+  display: flex;
+  align-items: center;
+  /* important to vertically center link contents */
 }
 
-.nav-links a {
+/* anchors: use inline-flex so icon + text align center */
+.nav-links a,
+.dropdown-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  /* spacing between image/icon and text */
   text-decoration: none;
   color: white;
-  padding: 8px 12px;
-  transition: background 0.3s;
+  padding: 10px 12px;
+  height: 100%;
+  line-height: normal;
+  /* prevent baseline offsets */
+  border-radius: 6px;
+  transition: background 0.18s ease;
+  font-size: 0.95rem;
 }
 
+/* hover */
 .nav-links a:hover {
-  background: #444;
-  border-radius: 5px;
+  background: #111;
+  /* subtle hover contrast, not too bright */
 }
 
-/* Dropdown */
 .dropdown-menu {
   display: none;
   position: absolute;
-  top: 100%;
+  top: 100%;   /* instead of calc(100% + 8px) */
   left: 0;
-  background: #333;
+  background: #222;
   min-width: 180px;
   list-style: none;
-  padding: 0;
+  padding: 6px 0;
   margin: 0;
-  border-radius: 5px;
+  border-radius: 6px;
   z-index: 1000;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.6);
 }
+
+.dropdown:hover .dropdown-menu,
+.dropdown .dropdown-menu:hover {
+  display: block;
+}
+
+
 
 .dropdown-menu li a {
   display: block;
-  padding: 10px;
+  padding: 10px 14px;
+  color: #fff;
 }
 
 .dropdown-menu li a:hover {
-  background: #555;
+  background: #333;
 }
 
-/* Hover dropdown (desktop) */
+/* show on hover (desktop) */
 .dropdown:hover .dropdown-menu {
   display: block;
 }
 
-/* Show dropdown when active (click on mobile) */
+/* show when toggled (mobile click) */
 .dropdown.active .dropdown-menu {
   display: block;
 }
 
-/* Hamburger button */
+/* ==========================
+   Profile picture + user name
+   ========================== */
+/* profile pic inside nav */
+.nav-profile-pic {
+  width: 36px;
+  /* slightly larger for clarity */
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  vertical-align: middle;
+  margin-right: 8px;
+  /* spacing between picture and name */
+  display: inline-block;
+  flex-shrink: 0;
+  /* don't shrink the image */
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+/* the anchor that holds profile pic + name */
+.user-menu {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  color: #fff;
+}
+
+/* dropdown specific tweaks for the user menu */
+.user-dropdown .dropdown-menu {
+  right: 0;
+  left: auto;
+  /* align dropdown to the right edge of the username */
+}
+
+/* ==========================
+   Hamburger & mobile
+   ========================== */
 .hamburger {
   display: none;
   font-size: 28px;
   cursor: pointer;
-  color: white;  /* make sure it contrasts background */
-  z-index: 1100; /* keep it above nav */
+  color: white;
+  z-index: 1100;
 }
 
-/* Mobile styles */
+/* MOBILE */
 @media (max-width: 768px) {
   .hamburger {
     display: block;
   }
 
-  nav {
+  nav#nav-menu {
     display: none;
     width: 100%;
   }
 
-  nav.active {
+  nav#nav-menu.active {
     display: block;
   }
 
   .nav-links {
     flex-direction: column;
     gap: 0;
-    background: #222;
+    background: #111;
+    width: 100%;
   }
 
   .nav-links li {
@@ -128,12 +212,41 @@ body {
     display: block;
     width: 100%;
     padding: 12px 20px;
+    height: auto;
   }
 
-  /* Mobile dropdown menus expand inline */
-  .dropdown-menu {
-    position: static;
-    background: #333;
-    border-radius: 0;
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;   /* instead of calc(100% + 8px) */
+  left: 0;
+  background: #222;
+  min-width: 180px;
+  list-style: none;
+  padding: 6px 0;
+  margin: 0;
+  border-radius: 6px;
+  z-index: 1000;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+}
+
+
+  /* keep it visible when hovering either the parent li OR the submenu itself */
+  .dropdown:hover .dropdown-menu,
+  .dropdown .dropdown-menu:hover {
+    display: block;
   }
+
+
+  /* keep user-menu compact on mobile */
+  .user-menu {
+    padding: 10px 16px;
+  }
+}
+
+/* small accessibility / focus state */
+.nav-links a:focus,
+.dropdown-menu li a:focus {
+  outline: 2px solid rgba(0, 123, 255, 0.25);
+  outline-offset: 2px;
 }

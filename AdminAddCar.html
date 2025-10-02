@@ -122,6 +122,13 @@
             <label for="carDescription">Description</label>
             <input type="text" id="carDescription" placeholder="Input the text here" required>
 
+            <label for="pricePdf">Upload Price PDF</label>
+            <input type="file" id="pricePdf" accept="application/pdf">
+
+            <label for="brochurePdf">Upload Brochure PDF</label>
+            <input type="file" id="brochurePdf" accept="application/pdf">
+
+
             <label for="carImages">Upload Car Images (max 30)</label>
             <input type="file" id="carImages" accept="image/*" multiple required>
             <div id="imagePreview" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;"></div>
@@ -153,8 +160,8 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        const CLOUD_NAME = "dwxsc3aec";       
-        const UPLOAD_PRESET = "unsigned_preset"; 
+        const CLOUD_NAME = "dwxsc3aec";
+        const UPLOAD_PRESET = "unsigned_preset";
 
         let currentStep = 1;
         function showStep(step) {
@@ -245,6 +252,37 @@
           let mileage = parseInt(document.getElementById("carMileage").value);
           let color = document.getElementById("carColor").value.trim();
           let description = document.getElementById("carDescription").value.trim();
+          // Upload Price PDF if exists
+          let pricePdfUrl = "";
+          const pricePdfFile = document.getElementById("pricePdf").files[0];
+          if (pricePdfFile) {
+            const formData = new FormData();
+            formData.append("file", pricePdfFile);
+            formData.append("upload_preset", UPLOAD_PRESET);
+
+            const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/auto/upload`, {
+              method: "POST",
+              body: formData
+            });
+            const data = await res.json();
+            pricePdfUrl = data.secure_url;
+          }
+
+          // Upload Brochure PDF if exists
+          let brochurePdfUrl = "";
+          const brochurePdfFile = document.getElementById("brochurePdf").files[0];
+          if (brochurePdfFile) {
+            const formData = new FormData();
+            formData.append("file", brochurePdfFile);
+            formData.append("upload_preset", UPLOAD_PRESET);
+
+            const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/auto/upload`, {
+              method: "POST",
+              body: formData
+            });
+            const data = await res.json();
+            brochurePdfUrl = data.secure_url;
+          }
 
           let files = Array.from(document.getElementById("carImages").files).slice(0, 30);
           if (files.length === 0) {
@@ -293,9 +331,12 @@
             await addDoc(collection(db, "cars"), {
               type, brand, model, year, price,
               transmission, seats, mileage, color, description,
-              images: uploadedUrls,   
+              images: uploadedUrls,
+              pricePdf: pricePdfUrl,
+              brochurePdf: brochurePdfUrl,
               createdAt: serverTimestamp()
             });
+
 
             msg.textContent = "✅ Car, brand, model and images added successfully!";
             msg.style.color = "green";
@@ -309,4 +350,5 @@
         });
       </script>
 </body>
+
 </html>
