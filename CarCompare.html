@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Compare Cars | AutoCarMatch</title>
+  <link rel="stylesheet" href="assets/css/compare.css">
+  <link rel="stylesheet" href="assets/css/Footer.css">
+</head>
+<body>
+  <div id="navbar"></div>
+
+  <!-- Hero -->
+  <section class="hero-banner">
+    <h1>Compare Cars</h1>
+    <p>Choose two cars from our database and compare their details side by side.</p>
+  </section>
+
+  <!-- Search Section -->
+  <section class="compare-search">
+    <div class="search-box">
+      <h3>Search Car 1</h3>
+      <input type="text" id="searchCar1" placeholder="Type brand or model...">
+      <div id="resultsCar1" class="results-list"></div>
+    </div>
+    <div class="search-box">
+      <h3>Search Car 2</h3>
+      <input type="text" id="searchCar2" placeholder="Type brand or model...">
+      <div id="resultsCar2" class="results-list"></div>
+    </div>
+  </section>
+
+  <!-- Comparison Table -->
+  <section class="comparison-section">
+    <h2>Car Comparison</h2>
+    <table class="comparison-table">
+      <thead>
+        <tr>
+          <th>Specification</th>
+          <th id="car1Title">Car 1</th>
+          <th id="car2Title">Car 2</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Image</td><td id="car1Image"></td><td id="car2Image"></td></tr>
+        <tr><td>Brand</td><td id="car1Brand"></td><td id="car2Brand"></td></tr>
+        <tr><td>Model</td><td id="car1Model"></td><td id="car2Model"></td></tr>
+        <tr><td>Year</td><td id="car1Year"></td><td id="car2Year"></td></tr>
+        <tr><td>Price</td><td id="car1Price"></td><td id="car2Price"></td></tr>
+        <tr><td>Mileage</td><td id="car1Mileage"></td><td id="car2Mileage"></td></tr>
+        <tr><td>Seats</td><td id="car1Seats"></td><td id="car2Seats"></td></tr>
+        <tr><td>Transmission</td><td id="car1Transmission"></td><td id="car2Transmission"></td></tr>
+        <tr><td>Type</td><td id="car1Type"></td><td id="car2Type"></td></tr>
+        <tr><td>Color</td><td id="car1Color"></td><td id="car2Color"></td></tr>
+        <tr><td>Description</td><td id="car1Description"></td><td id="car2Description"></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <div id="footer"></div>
+
+  <!-- Firebase + Logic -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, query, where, getDocs, limit, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyD882u-zk7FB3YMwL0Nm3_VYD4xsCMt6cQ",
+      authDomain: "carlisting-f88f2.firebaseapp.com",
+      projectId: "carlisting-f88f2",
+      storageBucket: "carlisting-f88f2.appspot.com",
+      messagingSenderId: "49221518207",
+      appId: "1:49221518207:web:c5e2fd962b802322bfd04a"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Search Cars
+    async function searchCars(inputId, resultsId, carSlot) {
+      const input = document.getElementById(inputId);
+      const results = document.getElementById(resultsId);
+
+      input.addEventListener("input", async () => {
+        const searchTerm = input.value.trim().toLowerCase();
+        results.innerHTML = "";
+
+        if (searchTerm.length < 2) return; // avoid too many queries
+
+        const carsRef = collection(db, "cars");
+        const q = query(carsRef, orderBy("brand"), limit(10));
+        const snapshot = await getDocs(q);
+
+        snapshot.forEach(doc => {
+          const car = doc.data();
+          const carName = `${car.year} ${car.brand} ${car.model}`;
+
+          if (carName.toLowerCase().includes(searchTerm)) {
+            const item = document.createElement("div");
+            item.classList.add("result-item");
+            item.innerHTML = `
+              <img src="${car.images && car.images[0] ? car.images[0] : 'assets/images/no-image.png'}" alt="">
+              <span>${carName}</span>
+              <button>Select</button>
+            `;
+            item.querySelector("button").onclick = () => selectCar(car, carSlot);
+            results.appendChild(item);
+          }
+        });
+      });
+    }
+
+    function selectCar(car, slot) {
+      document.getElementById(`car${slot}Title`).innerText = `${car.year} ${car.brand} ${car.model}`;
+      document.getElementById(`car${slot}Image`).innerHTML = `<img src="${car.images && car.images[0] ? car.images[0] : 'assets/images/no-image.png'}" width="150">`;
+      document.getElementById(`car${slot}Brand`).innerText = car.brand;
+      document.getElementById(`car${slot}Model`).innerText = car.model;
+      document.getElementById(`car${slot}Year`).innerText = car.year;
+      document.getElementById(`car${slot}Price`).innerText = `RM ${car.price.toLocaleString()}`;
+      document.getElementById(`car${slot}Mileage`).innerText = car.mileage ? `${car.mileage.toLocaleString()} km` : "N/A";
+      document.getElementById(`car${slot}Seats`).innerText = car.seats || "N/A";
+      document.getElementById(`car${slot}Transmission`).innerText = car.transmission || "N/A";
+      document.getElementById(`car${slot}Type`).innerText = car.type || "N/A";
+      document.getElementById(`car${slot}Color`).innerText = car.color || "N/A";
+      document.getElementById(`car${slot}Description`).innerText = car.description || "N/A";
+    }
+
+    // Init search for both cars
+    searchCars("searchCar1", "resultsCar1", 1);
+    searchCars("searchCar2", "resultsCar2", 2);
+  </script>
+
+  <!-- Navbar & Footer -->
+  <script type="module">
+    import { loadNavbar } from "./assets/js/Navbar.js";
+    loadNavbar();
+  </script>
+  <script type="module">
+    import { loadFooter } from "./assets/js/Footer.js";
+    loadFooter();
+  </script>
+</body>
+</html>

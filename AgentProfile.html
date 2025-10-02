@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agent Profile | AutoCarMatch</title>
+  <link rel="stylesheet" href="assets/css/AgentProfile.css">
+</head>
+
+<body>
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="logo">AutoCarMatch</div>
+    <div class="hamburger" id="hamburger">&#9776;</div>
+    <ul class="nav-menu" id="nav-menu">
+      <li><a href="AgentHome.html">Homepage</a></li>
+      <li><a href="AgentService.html">Car Service</a></li>
+      <li><a href="AgentTestDrive.html">Test Drive</a></li>
+      <li><a href="AgentProfile.html">Profile</a></li>
+      <li><a href="#" onclick="logout()">Logout</a></li>
+    </ul>
+  </nav>
+
+  <!-- Profile Container -->
+  <div class="container">
+    <h1>My Profile</h1>
+    <form id="profileForm" class="profile-form">
+
+      <!-- Profile Picture -->
+      <div class="profile-pic-container">
+        <img id="profilePicPreview" src="assets/images/default-avatar.png" alt="Profile Picture">
+        <input type="file" id="profilePicInput" accept="image/*">
+      </div>
+
+      <!-- Info Fields -->
+      <label>Name</label>
+      <input type="text" id="name" placeholder="Enter your name" required />
+
+      <label>Email</label>
+      <input type="email" id="email" disabled />
+
+      <label>Phone Number</label>
+      <input type="text" id="phoneNumber" placeholder="Enter your phone number" />
+
+      <label>Role</label>
+      <input type="text" id="role" disabled />
+
+      <label>Type</label>
+      <input type="text" id="type" disabled />
+
+      <button type="submit">Save Changes</button>
+    </form>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <p>© 2025 AutoCarMatch | Agent Profile</p>
+  </footer>
+
+  <!-- Scripts -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    // ====== FIREBASE CONFIG ======
+    const firebaseConfig = {
+      apiKey: "AIzaSyD882u-zk7FB3YMwL0Nm3_VYD4xsCMt6cQ",
+      authDomain: "carlisting-f88f2.firebaseapp.com",
+      projectId: "carlisting-f88f2",
+      storageBucket: "carlisting-f88f2.appspot.com",
+      messagingSenderId: "49221518207",
+      appId: "1:49221518207:web:c5e2fd962b802322bfd04a",
+      measurementId: "G-EMFC5Q8FZ5"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // ====== CLOUDINARY CONFIG ======
+    const CLOUD_NAME = "dwxsc3aec";
+    const UPLOAD_PRESET = "unsigned_preset";
+
+    // ====== LOAD PROFILE ======
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const docRef = doc(db, "users", user.uid);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          document.getElementById("name").value = data.name || "";
+          document.getElementById("email").value = data.email || "";
+          document.getElementById("phoneNumber").value = data.phoneNumber || "";
+          document.getElementById("role").value = data.role || "";
+          document.getElementById("type").value = data.type || "";
+          if (data.profilePic) {
+            document.getElementById("profilePicPreview").src = data.profilePic;
+          }
+        }
+      } else {
+        alert("Please log in first.");
+        window.location.href = "Login.html";
+      }
+    });
+
+    // ====== SAVE CHANGES ======
+    document.getElementById("profileForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const docRef = doc(db, "users", user.uid);
+
+      let profilePicUrl = null;
+      const file = document.getElementById("profilePicInput").files[0];
+      if (file) {
+        // Upload to Cloudinary
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("upload_preset", UPLOAD_PRESET);
+
+        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+          method: "POST",
+          body: formData
+        });
+        const data = await res.json();
+        profilePicUrl = data.secure_url;
+      }
+
+      await updateDoc(docRef, {
+        name: document.getElementById("name").value,
+        phoneNumber: document.getElementById("phoneNumber").value,
+        ...(profilePicUrl && { profilePic: profilePicUrl })
+      });
+
+      alert("Profile updated successfully!");
+      if (profilePicUrl) {
+        document.getElementById("profilePicPreview").src = profilePicUrl;
+      }
+    });
+
+    // ====== LOGOUT ======
+    window.logout = async function () {
+      await signOut(auth);
+      window.location.href = "Login.html";
+    }
+  </script>
+</body>
+</html>

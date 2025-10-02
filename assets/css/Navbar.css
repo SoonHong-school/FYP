@@ -1,3 +1,23 @@
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
+              url("../images/background_login.jpg") no-repeat center center/cover;
+}
+
+.logo img {
+  height: 50px;
+  width: auto;
+}
+
 /* Navbar base */
 .navbar {
   display: flex;
@@ -97,30 +117,23 @@
     flex-direction: column;
     gap: 0;
     background: #222;
-    width: 100%;
   }
 
   .nav-links li {
     width: 100%;
-    border-top: 1px solid #333;
+    text-align: left;
   }
 
   .nav-links a {
     display: block;
     width: 100%;
-    padding: 14px 20px;
+    padding: 12px 20px;
   }
 
   /* Mobile dropdown menus expand inline */
   .dropdown-menu {
-    display: none;
     position: static;
     background: #333;
     border-radius: 0;
-    padding-left: 10px;
-  }
-
-  .dropdown.active .dropdown-menu {
-    display: block;
   }
 }

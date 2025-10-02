@@ -1,11 +1,14 @@
 body {
-  margin: 0;
-  font-family: Arial, sans-serif;
+  font-family: 'Poppins', sans-serif;
   background: #0f0f0f;
-  /* Dark background */
   color: #eee;
-  /* Light text for readability */
+  line-height: 1.6;
 }
+h1, h2, h3 {
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
 
 /* Navbar */
 .navbar {
@@ -155,23 +158,21 @@ footer {
 
 /* Hero Banner */
 .hero-banner {
-  background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.8)),
-    url("assets/images/aboutusbanner.jpg") no-repeat center center/cover;
-  color: #fff;
-  padding: 100px 20px;
+  background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)),
+              url("assets/images/aboutusbanner.jpg") center/cover no-repeat;
   text-align: center;
+  color: #fff;
+  padding: 120px 20px;
 }
-
 .hero-banner h1 {
   font-size: 3rem;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
 }
-
 .hero-banner p {
   font-size: 1.2rem;
-  max-width: 700px;
-  margin: auto;
+  opacity: 0.9;
 }
+
 
 /* Mission Cards */
 .mission-section {
@@ -183,11 +184,16 @@ footer {
 }
 
 .mission-card {
-  background: #fff;
+  background: #1a1a1a;
+  padding: 25px;
   border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, background 0.3s ease;
 }
+.mission-card:hover {
+  transform: translateY(-5px);
+  background: #222;
+}
+
 
 .mission-card h3 {
   margin-bottom: 10px;
@@ -204,15 +210,24 @@ footer {
 }
 
 .timeline ul {
-  list-style: none;
-  padding: 0;
+  border-left: 3px solid #b30000;
+  padding-left: 20px;
+}
+.timeline li {
+  margin-bottom: 20px;
+  position: relative;
+}
+.timeline li::before {
+  content: '';
+  width: 12px;
+  height: 12px;
+  background: #b30000;
+  border-radius: 50%;
+  position: absolute;
+  left: -9px;
+  top: 5px;
 }
 
-.timeline li {
-  margin: 20px 0;
-  padding-left: 20px;
-  border-left: 3px solid #000;
-}
 
 /* Stats Section */
 .stats-section {

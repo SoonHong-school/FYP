@@ -1,288 +1,247 @@
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
-        url("../images/background_login.jpg") no-repeat center center/cover;
-      color: #3f3f3f;
-    }
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-    .detail-container {
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-
-    .car-section {
-      background: #000000;
-      padding: 20px;
-      margin-bottom: 20px;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    }
-
-    .car-section:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-    }
-
-    .car-section h2 {
-      font-size: 22px;
-      margin-bottom: 12px;
-      border-left: 5px solid #0066cc;
-      padding-left: 10px;
-      color: #222;
-    }
-
-
-    .image-gallery {
-      text-align: center;
-    }
-
-    .image-gallery .main-image img {
-      width: 100%;
-      max-width: 600px;
-      /* keep it consistent */
-      height: 400px;
-      /* fixed height */
-      object-fit: fill;
-      /* crop while keeping aspect ratio */
-      border-radius: 12px;
-    }
-
-    .thumbnails {
-      margin-top: 10px;
-    }
-
-    .thumbnails img {
-      width: 100px;
-      height: 70px;
-      /* fixed height */
-      object-fit: cover;
-      /* crop nicely */
-      margin: 5px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: transform 0.2s ease;
-    }
-
-    .thumbnails img:hover {
-      transform: scale(1.05);
-    }
-
-    .price {
-      font-size: 26px;
-      font-weight: bold;
-      color: #e63946;
-      margin: 10px 0;
-      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
-    }
-
-
-    .overview-badges {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 15px;
-    }
-
-    .badge {
-      background: #f5f5f5;
-      padding: 8px 12px;
-      border-radius: 8px;
-      font-size: 14px;
-    }
-
-    .inspection-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 10px;
-      margin-top: 10px;
-    }
-
-    .inspection-card {
-      background: #f5f5f5;
-      padding: 10px;
-      border-radius: 8px;
-    }
-
-    .tab-header {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-
-    .tab-btn {
-      flex: 1;
-      padding: 10px;
-      border: none;
-      cursor: pointer;
-      border-radius: 8px;
-      background: #f5f5f5;
-    }
-
-    .tab-btn.active {
-      background: #0056d2;
-      color: #fff;
-    }
-
-    .tab-content {
-      display: none;
-    }
-
-    .tab-content.active {
-      display: block;
-    }
-
-    .buy-btn {
-      width: 100%;
-      padding: 15px;
-      background: #720000;
-      color: white;
-      font-size: 18px;
-      border: none;
-      border-radius: 12px;
-      cursor: pointer;
-    }
-
-    .buy-btn:hover {
-      background: #d80000;
-    }
-
-
-    .car-overview,
-    .inspection-report,
-    .car-details-tabs,
-    .financing {
-      margin-top: 25px;
-      padding: 20px;
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    }
-
-    .overview-badges {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 10px;
-      flex-wrap: wrap;
-    }
-
-    .badge {
-      background: #f4f6f9;
-      padding: 8px 14px;
-      border-radius: 20px;
-      font-size: 14px;
-      font-weight: 600;
-      color: #333;
-    }
-
-    .overview-info div {
-      margin: 5px 0;
-    }
-
-    .inspection-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 10px;
-    }
-
-    .inspection-card {
-      background: #f8fafc;
-      padding: 12px;
-      border-radius: 8px;
-      text-align: center;
-      font-weight: 600;
-    }
-
-    .tab-header {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 15px;
-    }
-
-    .tab-btn {
-      flex: 1;
-      padding: 10px;
-      background: #eee;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 600;
-    }
-
-    .tab-btn.active {
-      background: #0066cc;
-      color: white;
-    }
-
-    .tab-content {
-      display: none;
-    }
-
-    .tab-content.active {
-      display: block;
-    }
-
-    .loan-box {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .loan-box label {
-      font-weight: 600;
-      margin-top: 10px;
-    }
-
-    .loan-box input {
-      padding: 8px;
-      border: 2px solid #ccc;
-      border-radius: 6px;
-      width: 120px;
-      font-size: 14px;
-      transition: border 0.2s ease;
-    }
-
-    .loan-box input:focus {
-      border: 2px solid #0066cc;
-      outline: none;
-    }
-
-    .buy-btn {
-      background: linear-gradient(135deg, #0066cc, #004d99);
-      font-size: 18px;
-      padding: 15px;
-      border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-      transition: all 0.3s ease;
-    }
-
-    .buy-btn:hover {
-      transform: scale(1.05);
-      background: linear-gradient(135deg, #004d99, #003366);
-    }
-
-    .whatsapp-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 380px;
-    background-color: #25D366;
-    color: white;
-    font-weight: bold;
-    font-size: 16px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    text-decoration: none;
-    transition: background-color 0.3s ease;
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background: linear-gradient(135deg, #0d0d0d, #1a1a1a);
+  color: #f5f5f5;
+  line-height: 1.6;
 }
 
-.whatsapp-btn img {
-    width: 24px;
-    height: 24px;
+/* Page Container */
+.detail-container {
+  max-width: 1200px;
+  margin: 50px auto;
+  padding: 20px;
 }
 
-.whatsapp-btn:hover {
-    background-color: #1DA851;
+/* General Section Style */
+.car-section {
+  background: rgba(25, 25, 25, 0.9);
+  backdrop-filter: blur(12px);
+  padding: 30px;
+  margin-bottom: 30px;
+  border-radius: 18px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.6);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.car-section:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.7);
+}
+
+.car-section h2 {
+  font-size: 1.6rem;
+  margin-bottom: 18px;
+  border-left: 5px solid #ff3333;
+  padding-left: 14px;
+  color: #fff;
+}
+
+/* ================================
+   Image Gallery
+   ================================ */
+.image-gallery {
+  text-align: center;
+}
+
+.image-gallery .main-image img {
+  width: 100%;
+  max-width: 850px;
+  height: 460px;
+  object-fit: cover;
+  border-radius: 16px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.6);
+}
+
+.thumbnails {
+  margin-top: 15px;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.thumbnails img {
+  width: 120px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: transform 0.2s ease, border 0.2s ease;
+}
+
+.thumbnails img:hover {
+  transform: scale(1.08);
+  border: 2px solid #ff3333;
+}
+
+/* ================================
+   Car Info
+   ================================ */
+.car-info h1 {
+  font-size: 2rem;
+  margin-bottom: 8px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.price {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #00ff88;
+  margin-top: 5px;
+}
+
+/* ================================
+   Overview Section
+   ================================ */
+.overview-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.badge {
+  background: linear-gradient(135deg, #ff3333, #cc0000);
+  padding: 8px 18px;
+  border-radius: 25px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  box-shadow: 0 4px 10px rgba(255,0,0,0.3);
+}
+
+.overview-info div {
+  margin: 6px 0;
+  font-size: 15px;
+  color: #ddd;
+}
+
+/* ================================
+   Inspection Report
+   ================================ */
+.inspection-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.inspection-card {
+  background: rgba(255,255,255,0.05);
+  padding: 16px;
+  border-radius: 12px;
+  text-align: center;
+  font-weight: 600;
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #00ff88;
+  transition: all 0.3s ease;
+}
+
+.inspection-card:hover {
+  background: rgba(255,255,255,0.1);
+  transform: translateY(-2px);
+}
+
+/* ================================
+   Tabs
+   ================================ */
+.tab-header {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 14px;
+  border: none;
+  cursor: pointer;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.08);
+  font-weight: 600;
+  font-size: 1rem;
+  color: #ccc;
+  transition: all 0.3s ease;
+}
+
+.tab-btn:hover {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+}
+
+.tab-btn.active {
+  background: linear-gradient(135deg, #ff3333, #cc0000);
+  color: #fff;
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+  font-size: 15px;
+  color: #ddd;
+}
+
+/* ================================
+   Financing
+   ================================ */
+.loan-box {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: rgba(255,255,255,0.05);
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.loan-box label {
+  font-weight: 600;
+  color: #ccc;
+}
+
+.loan-box input {
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  font-size: 14px;
+}
+
+.loan-box input:focus {
+  outline: none;
+  background: rgba(255,255,255,0.15);
+  box-shadow: 0 0 0 2px #ff3333;
+}
+
+/* Floating WhatsApp Button */
+.whatsapp-float {
+  position: fixed;
+  bottom: 22px;
+  right: 22px;
+  background: #25d366;
+  padding: 14px;
+  border-radius: 50%;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+  z-index: 1000;
+  transition: transform 0.3s ease, background 0.3s ease;
+}
+
+.whatsapp-float img {
+  width: 34px;
+  height: 34px;
+  display: block;
+}
+
+.whatsapp-float:hover {
+  background: #20ba57;
+  transform: scale(1.15);
 }

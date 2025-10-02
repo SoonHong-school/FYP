@@ -71,24 +71,25 @@
   <!-- FAQ Toggle Script -->
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-      const questions = document.querySelectorAll(".faq-question");
-      questions.forEach(q => {
-        q.addEventListener("click", () => {
-          const answer = q.nextElementSibling;
-          const isOpen = answer.style.display === "block";
+  const questions = document.querySelectorAll(".faq-question");
 
-          // Close all other answers
-          document.querySelectorAll(".faq-answer").forEach(a => a.style.display = "none");
-          document.querySelectorAll(".faq-question span").forEach(s => s.textContent = "+");
+  questions.forEach(q => {
+    q.addEventListener("click", () => {
+      const answer = q.nextElementSibling;
 
-          // Toggle current one
-          if (!isOpen) {
-            answer.style.display = "block";
-            q.querySelector("span").textContent = "−";
-          }
-        });
-      });
+      // close others
+      document.querySelectorAll(".faq-answer").forEach(a => a.classList.remove("open"));
+      document.querySelectorAll(".faq-question").forEach(btn => btn.classList.remove("active"));
+
+      // toggle this one
+      if (!answer.classList.contains("open")) {
+        answer.classList.add("open");
+        q.classList.add("active");
+      }
     });
+  });
+});
+
   </script>
 
 </body>

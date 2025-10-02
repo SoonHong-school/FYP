@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Agent List | AutoCarMatch</title>
+    <link rel="stylesheet" href="assets/css/AgentList.css">
+    <link rel="stylesheet" href="assets/css/Footer.css">
+</head>
+
+<body>
+    <!-- Navbar -->
+    <div id="navbar"></div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <h1>Meet Our Agents</h1>
+
+        <h2>⚡ EV Agents</h2>
+        <div id="evAgents" class="agent-grid"></div>
+
+        <h2>⛽ Petrol Agents</h2>
+        <div id="petrolAgents" class="agent-grid"></div>
+    </div>
+
+    <!-- Placeholder for footer -->
+    <div id="footer"></div>
+
+    <!-- Scripts -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        // ====== FIREBASE CONFIG ======
+        const firebaseConfig = {
+            apiKey: "AIzaSyD882u-zk7FB3YMwL0Nm3_VYD4xsCMt6cQ",
+            authDomain: "carlisting-f88f2.firebaseapp.com",
+            projectId: "carlisting-f88f2",
+            storageBucket: "carlisting-f88f2.appspot.com",
+            messagingSenderId: "49221518207",
+            appId: "1:49221518207:web:c5e2fd962b802322bfd04a",
+            measurementId: "G-EMFC5Q8FZ5"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // ====== LOAD AGENTS ======
+        async function loadAgents() {
+            const querySnapshot = await getDocs(collection(db, "users"));
+            const evContainer = document.getElementById("evAgents");
+            const petrolContainer = document.getElementById("petrolAgents");
+
+            querySnapshot.forEach((doc) => {
+                const agent = doc.data();
+
+                // only show agents
+                if (agent.role !== "agent") return;
+
+                const card = document.createElement("div");
+                card.className = "agent-card";
+
+                // Format WhatsApp link if phone exists
+                let whatsappBtn = "";
+                if (agent.phoneNumber) {
+                    // ensure no spaces or dashes
+                    const phone = agent.phoneNumber.replace(/\D/g, "");
+                    whatsappBtn = `
+            <a href="https://wa.me/${phone}" target="_blank" class="whatsapp-btn">
+              💬 WhatsApp
+            </a>
+          `;
+                }
+
+                card.innerHTML = `
+          <img src="${agent.profilePic || 'assets/images/default-avatar.png'}" alt="${agent.name}">
+          <h3>${agent.name}</h3>
+          <p><strong>Email:</strong> ${agent.email}</p>
+          <p><strong>Type:</strong> ${agent.type}</p>
+          ${whatsappBtn}
+        `;
+
+                if (agent.type && agent.type.trim().toLowerCase() === "ev") {
+                    evContainer.appendChild(card);
+                } else {
+                    petrolContainer.appendChild(card);
+                }
+
+            });
+        }
+
+        loadAgents();
+    </script>
+
+    <!-- Navbar & Footer -->
+    <script type="module">
+        import { loadNavbar } from "./assets/js/Navbar.js";
+        loadNavbar();
+    </script>
+    <script type="module">
+        import { loadFooter } from "./assets/js/Footer.js";
+        loadFooter();
+    </script>
+</body>
+
+</html>

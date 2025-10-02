@@ -1,0 +1,108 @@
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: #111; /* darker, cleaner */
+  color: #eaeaea;
+}
+
+/* Container */
+.container {
+  max-width: 1200px;
+  margin: 60px auto;
+  padding: 0 20px;
+}
+
+/* Headings */
+h1 {
+  text-align: center;
+  margin-bottom: 40px;
+  font-size: 2.4rem;
+  font-weight: bold;
+  color: #ffffff;
+  letter-spacing: 1px;
+}
+
+h2 {
+  margin: 40px 0 20px;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #f0a500; /* accent (gold) */
+  border-bottom: 2px solid #333;
+  padding-bottom: 6px;
+}
+
+/* Agent Cards Grid */
+.agent-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 24px;
+  margin-bottom: 50px;
+}
+
+.agent-card {
+  background: #1c1c1c;
+  border-radius: 8px;
+  padding: 24px 20px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.agent-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+}
+
+/* Profile picture */
+.agent-card img {
+  width: 110px;
+  height: 110px;
+  object-fit: cover;
+  border-radius: 50%;
+  margin-bottom: 14px;
+  border: 2px solid #f0a500; /* gold accent ring */
+}
+
+/* Name */
+.agent-card h3 {
+  font-size: 1.2rem;
+  margin: 8px 0;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* Info text */
+.agent-card p {
+  margin: 4px 0;
+  font-size: 0.9rem;
+  color: #bbbbbb;
+}
+
+/* WhatsApp Button */
+.whatsapp-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 10px 16px;
+  background-color: #25D366;
+  color: #fff;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.whatsapp-btn:hover {
+  background-color: #1DA851;
+  transform: scale(1.05);
+}
