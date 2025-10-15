@@ -2,272 +2,336 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Car Details | AutoCarMatch</title>
-    <link rel="stylesheet" href="assets/css/CarDetail.css">
-    <link rel="stylesheet" href="assets/css/Footer.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Car Details | AutoCarMatch</title>
+  <link rel="stylesheet" href="assets/css/CarDetail.css">
+  <link rel="stylesheet" href="assets/css/Footer.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/spritespin/release/spritespin.css" />
 
-    <!-- SpriteSpin CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/spritespin/release/spritespin.css" />
+  <style>
+    /* === Interior Photos Section === */
+    .interior-gallery {
+      margin-top: 30px;
+      text-align: center;
+    }
 
+    .interior-gallery h2 {
+      margin-bottom: 10px;
+      font-size: 22px;
+      color: #ffffff;
+    }
+
+    .interior-main {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 10px;
+    }
+
+    .main-interior {
+      width: 80%;
+      max-width: 700px;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      object-fit: cover;
+    }
+
+    .interior-thumbnails {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .interior-thumbnails img {
+      width: 100px;
+      height: 70px;
+      object-fit: cover;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    .interior-thumbnails img:hover {
+      transform: scale(1.05);
+    }
+  </style>
 </head>
 
 <body>
-    <div id="navbar"></div>
+  <div id="navbar"></div>
 
-    <div class="detail-container">
+  <div class="detail-container">
 
-        <!-- Image Gallery -->
-        <section class="car-section image-gallery">
-            <div id="static-gallery">
-                <div class="main-image">
-                    <img id="currentImage" src="assets/images/no-image.png" alt="Car">
+    <!-- Image Gallery -->
+    <section class="car-section image-gallery">
+      <div id="static-gallery">
+        <div class="main-image">
+          <img id="currentImage" src="assets/images/no-image.png" alt="Car">
+          <button id="view360Btn" class="view360-btn">
+            <img src="assets/images/360icon.png" alt="360 Icon">
+          </button>
+        </div>
+        <div class="thumbnails" id="thumbnails"></div>
+      </div>
 
-                    <button id="view360Btn" class="view360-btn">
-                        <img src="assets/images/360icon.png" alt="360 Icon">
-                    </button>
+      <!-- 360 Viewer -->
+      <div id="viewer360" style="display:none; text-align:center; position:relative;">
+        <div id="car360" style="width:800px; height:600px; margin:auto; position:relative;"></div>
+        <div class="rotation-hint">
+          <span class="arrow left">⬅</span>
+          <span class="hint-text">Drag left or right to rotate</span>
+          <span class="arrow right">➡</span>
+        </div>
+        <button id="backToPhotosBtn" class="doc-btn" style="margin-top:10px;">⬅ Back to Photos</button>
+      </div>
+    </section>
 
-                </div>
+    <!-- Car Info -->
+    <section class="car-section car-info">
+      <h1 id="carTitle">Loading...</h1>
+      <h3 class="price" id="carPrice"></h3>
+    </section>
 
-                <div class="thumbnails" id="thumbnails"></div>
-            </div>
+    <!-- Overview -->
+    <section class="car-section car-overview">
+      <h2>Overview</h2>
+      <div class="overview-badges">
+        <div class="badge">✔ 1-Year Warranty</div>
+        <div class="badge">✔ 5-Day Money-back Guarantee</div>
+        <div class="badge">✔ Quality Cars Guaranteed</div>
+      </div>
+      <div class="overview-info">
+        <div><strong>Mileage:</strong> <span id="carMileage"></span></div>
+        <div><strong>Transmission:</strong> <span id="carTransmission"></span></div>
+        <div><strong>Year:</strong> <span id="carYear"></span></div>
+        <div><strong>Seats:</strong> <span id="carSeats"></span></div>
+        <div><strong>Color:</strong> <span id="carColor"></span></div>
+      </div>
+    </section>
 
-            <!-- 360 Viewer (hidden by default) -->
-            <div id="viewer360" style="display:none; text-align:center; position:relative;">
-                <div id="car360" style="width:800px; height:600px; margin:auto; position:relative;"></div>
+        <!-- ✅ Interior Photos Section -->
+    <section class="car-section interior-gallery" id="interior-section" style="display:none;">
+      <h2>Interior Photos</h2>
+      <div class="interior-main">
+        <img id="currentInteriorImage" src="assets/images/no-image.png" alt="Interior" class="main-interior">
+      </div>
+      <div class="interior-thumbnails" id="interiorThumbnails"></div>
+    </section>
 
-                <!-- Overlay arrows + hint -->
-                <div class="rotation-hint">
-                    <span class="arrow left">⬅</span>
-                    <span class="hint-text">Drag left or right to rotate</span>
-                    <span class="arrow right">➡</span>
-                </div>
+    <!-- Documents -->
+    <section class="car-section inspection-report">
+      <h2>Documents</h2>
+      <p>You can download the official documents for this car below:</p>
+      <div class="document-buttons">
+        <a id="pricePdfBtn" class="doc-btn" href="#" download style="display:none;">📑 Download Price PDF</a>
+        <a id="brochurePdfBtn" class="doc-btn" href="#" download style="display:none;">📑 Download Brochure</a>
+      </div>
+    </section>
 
-                <button id="backToPhotosBtn" class="doc-btn" style="margin-top:10px;">⬅ Back to Photos</button>
-            </div>
-        </section>
+    <!-- Tabs -->
+    <section class="car-section car-details-tabs">
+      <div class="tab-header">
+        <button class="tab-btn active" onclick="openTab(event,'details')">Car Details</button>
+        <button class="tab-btn" onclick="openTab(event,'specs')">Specifications</button>
+      </div>
+      <div id="details" class="tab-content active">
+        <p><strong>Brand:</strong> <span id="carBrand"></span></p>
+        <p><strong>Model:</strong> <span id="carModel"></span></p>
+        <p><strong>Description:</strong> <span id="carDescription"></span></p>
+      </div>
+      <div id="specs" class="tab-content">
+        <p>⚙ Engine: 2.0L Turbo (Example)</p>
+        <p>📏 Dimensions: 4,500mm x 1,800mm x 1,600mm</p>
+        <p>🛡 Safety: ABS, Airbags, Lane Assist</p>
+      </div>
+    </section>
 
-        <!-- Car Info -->
-        <section class="car-section car-info">
-            <h1 id="carTitle">Loading...</h1>
-            <h3 class="price" id="carPrice"></h3>
-        </section>
+    <!-- Financing -->
+    <section class="car-section financing">
+      <h2>Financing</h2>
+      <div class="loan-box">
+        <p><strong>Car Price:</strong> RM <span id="carPriceValue"></span></p>
+        <label>Down Payment (%):</label>
+        <input type="number" id="downPayment" value="10"> %
+        <label>Loan Tenure:</label>
+        <input type="number" id="loanTenure" value="9"> years
+        <p><strong>Estimated Monthly:</strong> RM <span id="monthlyPayment"></span></p>
+      </div>
+    </section>
 
-        <!-- Overview Section -->
-        <section class="car-section car-overview">
-            <h2>Overview</h2>
-            <div class="overview-badges">
-                <div class="badge">✔ 1-Year Warranty</div>
-                <div class="badge">✔ 5-Day Money-back Guarantee</div>
-                <div class="badge">✔ Quality Cars Guaranteed</div>
-            </div>
-            <div class="overview-info">
-                <div><strong>Mileage:</strong> <span id="carMileage"></span></div>
-                <div><strong>Transmission:</strong> <span id="carTransmission"></span></div>
-                <div><strong>Year:</strong> <span id="carYear"></span></div>
-                <div><strong>Seats:</strong> <span id="carSeats"></span></div>
-                <div><strong>Color:</strong> <span id="carColor"></span></div>
-            </div>
-        </section>
+    <a href="https://wa.me/60123456789?text=I'm%20interested%20in%20this%20car" class="whatsapp-float" target="_blank">
+      <img src="assets/images/whatsapp.png" alt="WhatsApp Icon">
+    </a>
+  </div>
 
-        <!-- Documents -->
-        <section class="car-section inspection-report">
-            <h2>Documents</h2>
-            <p>You can download the official documents for this car below:</p>
-            <div class="document-buttons">
-                <a id="pricePdfBtn" class="doc-btn" href="#" download style="display:none;">📑 Download Price PDF</a>
-                <a id="brochurePdfBtn" class="doc-btn" href="#" download style="display:none;">📑 Download Brochure</a>
-            </div>
-        </section>
+  <div id="footer"></div>
 
-        <!-- Car Details Tabs -->
-        <section class="car-section car-details-tabs">
-            <div class="tab-header">
-                <button class="tab-btn active" onclick="openTab(event,'details')">Car Details</button>
-                <button class="tab-btn" onclick="openTab(event,'specs')">Specifications</button>
-            </div>
-            <div id="details" class="tab-content active">
-                <p><strong>Brand:</strong> <span id="carBrand"></span></p>
-                <p><strong>Model:</strong> <span id="carModel"></span></p>
-                <p><strong>Description:</strong> <span id="carDescription"></span></p>
-            </div>
-            <div id="specs" class="tab-content">
-                <p>⚙ Engine: 2.0L Turbo (Example)</p>
-                <p>📏 Dimensions: 4,500mm x 1,800mm x 1,600mm</p>
-                <p>🛡 Safety: ABS, Airbags, Lane Assist</p>
-            </div>
-        </section>
+  <!-- Firebase Logic -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-        <!-- Financing -->
-        <section class="car-section financing">
-            <h2>Financing</h2>
-            <div class="loan-box">
-                <p><strong>Car Price:</strong> RM <span id="carPriceValue"></span></p>
-                <label>Down Payment (%):</label>
-                <input type="number" id="downPayment" value="10"> %
-                <label>Loan Tenure:</label>
-                <input type="number" id="loanTenure" value="9"> years
-                <p><strong>Estimated Monthly:</strong> RM <span id="monthlyPayment"></span></p>
-            </div>
-        </section>
+    const firebaseConfig = {
+      apiKey: "AIzaSyD882u-zk7FB3YMwL0Nm3_VYD4xsCMt6cQ",
+      authDomain: "carlisting-f88f2.firebaseapp.com",
+      projectId: "carlisting-f88f2",
+      storageBucket: "carlisting-f88f2.appspot.com",
+      messagingSenderId: "49221518207",
+      appId: "1:49221518207:web:c5e2fd962b802322bfd04a"
+    };
 
-        <a href="https://wa.me/60123456789?text=I'm%20interested%20in%20this%20car" class="whatsapp-float"
-            target="_blank">
-            <img src="assets/images/whatsapp.png" alt="WhatsApp Icon">
-        </a>
-    </div>
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-    <div id="footer"></div>
+    const urlParams = new URLSearchParams(window.location.search);
+    const carId = urlParams.get("id");
 
-    <!-- Firebase SDK + Logic -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    function makeDownloadUrl(url, filename = "document.pdf") {
+      if (!url) return "#";
+      return url.replace("/upload/", `/upload/fl_attachment:${filename}/`);
+    }
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyD882u-zk7FB3YMwL0Nm3_VYD4xsCMt6cQ",
-            authDomain: "carlisting-f88f2.firebaseapp.com",
-            projectId: "carlisting-f88f2",
-            storageBucket: "carlisting-f88f2.appspot.com",
-            messagingSenderId: "49221518207",
-            appId: "1:49221518207:web:c5e2fd962b802322bfd04a"
+    async function loadCar() {
+      if (!carId) {
+        document.querySelector(".car-info").innerHTML = "<h2>❌ No car selected!</h2>";
+        return;
+      }
+
+      const carRef = doc(db, "cars", carId);
+      const carSnap = await getDoc(carRef);
+      if (!carSnap.exists()) {
+        document.querySelector(".car-info").innerHTML = "<h2>❌ Car not found!</h2>";
+        return;
+      }
+
+      const car = carSnap.data();
+
+      // Basic details
+      document.getElementById("carTitle").innerText = `${car.year} ${car.brand} ${car.model}`;
+      document.getElementById("carPrice").innerText = `RM ${car.price.toLocaleString()}`;
+      document.getElementById("carPriceValue").innerText = car.price.toLocaleString();
+      document.getElementById("carBrand").innerText = car.brand;
+      document.getElementById("carModel").innerText = car.model;
+      document.getElementById("carYear").innerText = car.year;
+      document.getElementById("carTransmission").innerText = car.transmission || "N/A";
+      document.getElementById("carSeats").innerText = car.seats || "N/A";
+      document.getElementById("carMileage").innerText = car.mileage ? `${car.mileage.toLocaleString()} km` : "N/A";
+      document.getElementById("carColor").innerText = car.color || "N/A";
+      document.getElementById("carDescription").innerText = car.description || "No description provided.";
+
+      // PDFs
+      if (car.pricePdf) {
+        const priceBtn = document.getElementById("pricePdfBtn");
+        priceBtn.href = makeDownloadUrl(car.pricePdf);
+        priceBtn.style.display = "inline-block";
+      }
+
+      if (car.brochurePdf) {
+        const brochureBtn = document.getElementById("brochurePdfBtn");
+        brochureBtn.href = makeDownloadUrl(car.brochurePdf);
+        brochureBtn.style.display = "inline-block";
+      }
+
+      // Exterior Images
+      if (car.images && car.images.length > 0) {
+        document.getElementById("currentImage").src = car.images[0];
+        const thumbs = document.getElementById("thumbnails");
+        thumbs.innerHTML = "";
+        car.images.forEach(img => {
+          const thumb = document.createElement("img");
+          thumb.src = img;
+          thumb.onclick = () => {
+            document.getElementById("currentImage").src = img;
+          };
+          thumbs.appendChild(thumb);
+        });
+
+        document.getElementById("view360Btn").onclick = function () {
+          document.getElementById("static-gallery").style.display = "none";
+          document.getElementById("viewer360").style.display = "block";
+
+          $("#car360").spritespin({
+            source: car.images,
+            width: 600,
+            height: 400,
+            sense: -1,
+            frameTime: 120,
+            animate: false
+          });
         };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        const urlParams = new URLSearchParams(window.location.search);
-        const carId = urlParams.get("id");
-
-        function makeDownloadUrl(url, filename = "document.pdf") {
-            if (!url) return "#";
-            return url.replace("/upload/", `/upload/fl_attachment:${filename}/`);
-        }
-
-        async function loadCar() {
-            if (!carId) {
-                document.querySelector(".car-info").innerHTML = "<h2>❌ No car selected!</h2>";
-                return;
-            }
-
-            const carRef = doc(db, "cars", carId);
-            const carSnap = await getDoc(carRef);
-
-            if (!carSnap.exists()) {
-                document.querySelector(".car-info").innerHTML = "<h2>❌ Car not found!</h2>";
-                return;
-            }
-
-            const car = carSnap.data();
-
-            document.getElementById("carTitle").innerText = `${car.year} ${car.brand} ${car.model}`;
-            document.getElementById("carPrice").innerText = `RM ${car.price.toLocaleString()}`;
-            document.getElementById("carPriceValue").innerText = car.price.toLocaleString();
-            document.getElementById("carBrand").innerText = car.brand;
-            document.getElementById("carModel").innerText = car.model;
-            document.getElementById("carYear").innerText = car.year;
-            document.getElementById("carTransmission").innerText = car.transmission || "N/A";
-            document.getElementById("carSeats").innerText = car.seats || "N/A";
-            document.getElementById("carMileage").innerText = car.mileage ? `${car.mileage.toLocaleString()} km` : "N/A";
-            document.getElementById("carColor").innerText = car.color || "N/A";
-            document.getElementById("carDescription").innerText = car.description || "No description provided.";
-
-            // Show PDF download buttons if available
-            if (car.pricePdf) {
-                const priceBtn = document.getElementById("pricePdfBtn");
-                priceBtn.href = makeDownloadUrl(car.pricePdf);
-                priceBtn.style.display = "inline-block";
-            }
-
-            if (car.brochurePdf) {
-                const brochureBtn = document.getElementById("brochurePdfBtn");
-                brochureBtn.href = makeDownloadUrl(car.brochurePdf);
-                brochureBtn.style.display = "inline-block";
-            }
-
-            // Images
-            if (car.images && car.images.length > 0) {
-                document.getElementById("currentImage").src = car.images[0];
-                const thumbs = document.getElementById("thumbnails");
-                thumbs.innerHTML = "";
-                car.images.forEach(img => {
-                    const thumb = document.createElement("img");
-                    thumb.src = img;
-                    thumb.onclick = () => {
-                        document.getElementById("currentImage").src = img;
-                    };
-                    thumbs.appendChild(thumb);
-                });
-
-                // 360 button click → show 360 viewer
-                document.getElementById("view360Btn").onclick = function () {
-                    document.getElementById("static-gallery").style.display = "none";
-                    document.getElementById("viewer360").style.display = "block";
-
-                    $("#car360").spritespin({
-                        source: car.images,
-                        width: 600,
-                        height: 400,
-                        sense: -1,
-                        frameTime: 120,
-                        animate: false
-                    });
-                };
-
-                // Back button click → return to static gallery
-                document.getElementById("backToPhotosBtn").onclick = function () {
-                    document.getElementById("viewer360").style.display = "none";
-                    document.getElementById("static-gallery").style.display = "block";
-                };
-            }
-        }
-
-        loadCar();
-
-        // Financing Calculator
-        const downInput = document.getElementById("downPayment");
-        const tenureInput = document.getElementById("loanTenure");
-        const monthlyOut = document.getElementById("monthlyPayment");
-
-        function calcLoan() {
-            const price = parseFloat(document.getElementById("carPriceValue").innerText.replace(/,/g, ""));
-            const down = parseFloat(downInput.value) / 100 * price;
-            const loan = price - down;
-            const months = tenureInput.value * 12;
-            const monthly = Math.round(loan / months);
-            monthlyOut.innerText = monthly.toLocaleString();
-        }
-
-        downInput.addEventListener("input", calcLoan);
-        tenureInput.addEventListener("input", calcLoan);
-
-        // Tabs
-        window.openTab = function (evt, tabId) {
-            const contents = document.querySelectorAll(".tab-content");
-            const buttons = document.querySelectorAll(".tab-btn");
-
-            contents.forEach(c => c.classList.remove("active"));
-            buttons.forEach(b => b.classList.remove("active"));
-
-            document.getElementById(tabId).classList.add("active");
-            evt.currentTarget.classList.add("active");
+        document.getElementById("backToPhotosBtn").onclick = function () {
+          document.getElementById("viewer360").style.display = "none";
+          document.getElementById("static-gallery").style.display = "block";
         };
-    </script>
+      }
 
-    <!-- SpriteSpin JS -->
-    <script src="https://cdn.jsdelivr.net/npm/jquery"></script>
-    <script src="https://cdn.jsdelivr.net/npm/spritespin/release/spritespin.js"></script>
+      // ✅ Interior Images
+      if (car.interiorImages && car.interiorImages.length > 0) {
+        document.getElementById("interior-section").style.display = "block";
 
-    <!-- Navbar & Footer -->
-    <script type="module">
-        import { loadNavbar } from "./assets/js/Navbar.js";
-        loadNavbar();
-    </script>
-    <script type="module">
-        import { loadFooter } from "./assets/js/Footer.js";
-        loadFooter();
-    </script>
+        const currentInterior = document.getElementById("currentInteriorImage");
+        const thumbs = document.getElementById("interiorThumbnails");
+        thumbs.innerHTML = "";
+        currentInterior.src = car.interiorImages[0];
+
+        car.interiorImages.forEach(img => {
+          const thumb = document.createElement("img");
+          thumb.src = img;
+          thumb.classList.add("interior-thumb");
+          thumb.onclick = () => {
+            currentInterior.src = img;
+          };
+          thumbs.appendChild(thumb);
+        });
+      }
+    }
+
+    loadCar();
+
+    // Financing calculator
+    const downInput = document.getElementById("downPayment");
+    const tenureInput = document.getElementById("loanTenure");
+    const monthlyOut = document.getElementById("monthlyPayment");
+
+    function calcLoan() {
+      const price = parseFloat(document.getElementById("carPriceValue").innerText.replace(/,/g, ""));
+      const down = parseFloat(downInput.value) / 100 * price;
+      const loan = price - down;
+      const months = tenureInput.value * 12;
+      const monthly = Math.round(loan / months);
+      monthlyOut.innerText = monthly.toLocaleString();
+    }
+
+    downInput.addEventListener("input", calcLoan);
+    tenureInput.addEventListener("input", calcLoan);
+
+    // Tabs
+    window.openTab = function (evt, tabId) {
+      const contents = document.querySelectorAll(".tab-content");
+      const buttons = document.querySelectorAll(".tab-btn");
+
+      contents.forEach(c => c.classList.remove("active"));
+      buttons.forEach(b => b.classList.remove("active"));
+
+      document.getElementById(tabId).classList.add("active");
+      evt.currentTarget.classList.add("active");
+    };
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/jquery"></script>
+  <script src="https://cdn.jsdelivr.net/npm/spritespin/release/spritespin.js"></script>
+
+  <!-- Navbar & Footer -->
+  <script type="module">
+    import { loadNavbar } from "./assets/js/Navbar.js";
+    loadNavbar();
+  </script>
+  <script type="module">
+    import { loadFooter } from "./assets/js/Footer.js";
+    loadFooter();
+  </script>
 </body>
 
 </html>

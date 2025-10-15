@@ -128,10 +128,14 @@
             <label for="brochurePdf">Upload Brochure PDF</label>
             <input type="file" id="brochurePdf" accept="application/pdf">
 
-
             <label for="carImages">Upload Car Images (max 30)</label>
             <input type="file" id="carImages" accept="image/*" multiple required>
             <div id="imagePreview" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;"></div>
+
+            <!-- NEW Interior Upload Section -->
+            <label for="interiorImages">Upload Interior Photos (max 20)</label>
+            <input type="file" id="interiorImages" accept="image/*" multiple>
+            <div id="interiorPreview" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;"></div>
 
             <div class="wizard-buttons">
               <button type="button" onclick="prevStep()">Back</button>
@@ -199,12 +203,11 @@
           }
         });
 
-        // Preview uploaded images with order selection
+        // Preview uploaded images
         document.getElementById("carImages").addEventListener("change", (e) => {
           const files = Array.from(e.target.files).slice(0, 30);
           const preview = document.getElementById("imagePreview");
           preview.innerHTML = "";
-
           files.forEach((file, index) => {
             const reader = new FileReader();
             reader.onload = (ev) => {
@@ -213,7 +216,6 @@
               div.style.flexDirection = "column";
               div.style.alignItems = "center";
               div.style.gap = "4px";
-
               const img = document.createElement("img");
               img.src = ev.target.result;
               img.style.width = "80px";
@@ -221,16 +223,48 @@
               img.style.objectFit = "cover";
               img.style.borderRadius = "6px";
               div.appendChild(img);
-
               const orderInput = document.createElement("input");
               orderInput.type = "number";
               orderInput.min = 1;
               orderInput.max = files.length;
               orderInput.value = index + 1;
               orderInput.style.width = "50px";
-              orderInput.dataset.index = index; // original file index
+              orderInput.dataset.index = index;
               div.appendChild(orderInput);
+              preview.appendChild(div);
+            };
+            reader.readAsDataURL(file);
+          });
+        });
 
+        // Preview uploaded interior images
+        document.getElementById("interiorImages").addEventListener("change", (e) => {
+          const files = Array.from(e.target.files).slice(0, 20);
+          const preview = document.getElementById("interiorPreview");
+          preview.innerHTML = "";
+          files.forEach((file, index) => {
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+              const div = document.createElement("div");
+              div.style.display = "flex";
+              div.style.flexDirection = "column";
+              div.style.alignItems = "center";
+              div.style.gap = "4px";
+              const img = document.createElement("img");
+              img.src = ev.target.result;
+              img.style.width = "80px";
+              img.style.height = "60px";
+              img.style.objectFit = "cover";
+              img.style.borderRadius = "6px";
+              div.appendChild(img);
+              const orderInput = document.createElement("input");
+              orderInput.type = "number";
+              orderInput.min = 1;
+              orderInput.max = files.length;
+              orderInput.value = index + 1;
+              orderInput.style.width = "50px";
+              orderInput.dataset.index = index;
+              div.appendChild(orderInput);
               preview.appendChild(div);
             };
             reader.readAsDataURL(file);
@@ -252,38 +286,32 @@
           let mileage = parseInt(document.getElementById("carMileage").value);
           let color = document.getElementById("carColor").value.trim();
           let description = document.getElementById("carDescription").value.trim();
-          // Upload Price PDF if exists
+
+          // Upload PDFs
           let pricePdfUrl = "";
+          let brochurePdfUrl = "";
           const pricePdfFile = document.getElementById("pricePdf").files[0];
+          const brochurePdfFile = document.getElementById("brochurePdf").files[0];
+
           if (pricePdfFile) {
             const formData = new FormData();
             formData.append("file", pricePdfFile);
             formData.append("upload_preset", UPLOAD_PRESET);
-
-            const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/auto/upload`, {
-              method: "POST",
-              body: formData
-            });
+            const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/auto/upload`, { method: "POST", body: formData });
             const data = await res.json();
             pricePdfUrl = data.secure_url;
           }
 
-          // Upload Brochure PDF if exists
-          let brochurePdfUrl = "";
-          const brochurePdfFile = document.getElementById("brochurePdf").files[0];
           if (brochurePdfFile) {
             const formData = new FormData();
             formData.append("file", brochurePdfFile);
             formData.append("upload_preset", UPLOAD_PRESET);
-
-            const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/auto/upload`, {
-              method: "POST",
-              body: formData
-            });
+            const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/auto/upload`, { method: "POST", body: formData });
             const data = await res.json();
             brochurePdfUrl = data.secure_url;
           }
 
+          // Exterior images
           let files = Array.from(document.getElementById("carImages").files).slice(0, 30);
           if (files.length === 0) {
             msg.textContent = "❌ Please upload at least one image";
@@ -291,7 +319,6 @@
             return;
           }
 
-          // Sort files based on order input
           const orderInputs = Array.from(document.querySelectorAll("#imagePreview input[type='number']"));
           files.sort((a, b) => {
             const indexA = orderInputs.find(input => input.dataset.index == files.indexOf(a)).value;
@@ -299,24 +326,43 @@
             return parseInt(indexA) - parseInt(indexB);
           });
 
-          msg.textContent = "⏳ Uploading images to Cloudinary...";
+          msg.textContent = "⏳ Uploading exterior images...";
           msg.style.color = "blue";
 
-          try {
-            let uploadedUrls = [];
-            for (let file of files) {
+          let uploadedUrls = [];
+          for (let file of files) {
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("upload_preset", UPLOAD_PRESET);
+            const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: "POST", body: formData });
+            const data = await res.json();
+            uploadedUrls.push(data.secure_url);
+          }
+
+          // Interior images
+          const interiorFiles = Array.from(document.getElementById("interiorImages").files).slice(0, 20);
+          let interiorUploadedUrls = [];
+
+          if (interiorFiles.length > 0) {
+            msg.textContent = "⏳ Uploading interior photos...";
+            const orderInputs2 = Array.from(document.querySelectorAll("#interiorPreview input[type='number']"));
+            interiorFiles.sort((a, b) => {
+              const indexA = orderInputs2.find(input => input.dataset.index == interiorFiles.indexOf(a)).value;
+              const indexB = orderInputs2.find(input => input.dataset.index == interiorFiles.indexOf(b)).value;
+              return parseInt(indexA) - parseInt(indexB);
+            });
+
+            for (let file of interiorFiles) {
               const formData = new FormData();
               formData.append("file", file);
               formData.append("upload_preset", UPLOAD_PRESET);
-
-              const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
-                method: "POST",
-                body: formData
-              });
+              const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: "POST", body: formData });
               const data = await res.json();
-              uploadedUrls.push(data.secure_url);
+              interiorUploadedUrls.push(data.secure_url);
             }
+          }
 
+          try {
             // Save brand if not exists
             const brandQuery = query(collection(db, "brands"), where("name", "==", brand));
             const brandSnap = await getDocs(brandQuery);
@@ -332,16 +378,17 @@
               type, brand, model, year, price,
               transmission, seats, mileage, color, description,
               images: uploadedUrls,
+              interiorImages: interiorUploadedUrls,
               pricePdf: pricePdfUrl,
               brochurePdf: brochurePdfUrl,
               createdAt: serverTimestamp()
             });
 
-
-            msg.textContent = "✅ Car, brand, model and images added successfully!";
+            msg.textContent = "✅ Car, brand, model, and images added successfully!";
             msg.style.color = "green";
             document.getElementById("insertCarForm").reset();
             document.getElementById("imagePreview").innerHTML = "";
+            document.getElementById("interiorPreview").innerHTML = "";
             showStep(1);
           } catch (err) {
             msg.textContent = "❌ " + err.message;
@@ -349,6 +396,7 @@
           }
         });
       </script>
+    </main>
+  </div>
 </body>
-
 </html>
