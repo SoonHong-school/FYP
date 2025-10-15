@@ -7,6 +7,10 @@
     <title>Car Details | AutoCarMatch</title>
     <link rel="stylesheet" href="assets/css/CarDetail.css">
     <link rel="stylesheet" href="assets/css/Footer.css">
+
+    <!-- SpriteSpin CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/spritespin/release/spritespin.css" />
+
 </head>
 
 <body>
@@ -16,10 +20,32 @@
 
         <!-- Image Gallery -->
         <section class="car-section image-gallery">
-            <div class="main-image">
-                <img id="currentImage" src="assets/images/no-image.png" alt="Car">
+            <div id="static-gallery">
+                <div class="main-image">
+                    <img id="currentImage" src="assets/images/no-image.png" alt="Car">
+
+                    <button id="view360Btn" class="view360-btn">
+                        <img src="assets/images/360icon.png" alt="360 Icon">
+                    </button>
+
+                </div>
+
+                <div class="thumbnails" id="thumbnails"></div>
             </div>
-            <div class="thumbnails" id="thumbnails"></div>
+
+            <!-- 360 Viewer (hidden by default) -->
+            <div id="viewer360" style="display:none; text-align:center; position:relative;">
+                <div id="car360" style="width:800px; height:600px; margin:auto; position:relative;"></div>
+
+                <!-- Overlay arrows + hint -->
+                <div class="rotation-hint">
+                    <span class="arrow left">⬅</span>
+                    <span class="hint-text">Drag left or right to rotate</span>
+                    <span class="arrow right">➡</span>
+                </div>
+
+                <button id="backToPhotosBtn" class="doc-btn" style="margin-top:10px;">⬅ Back to Photos</button>
+            </div>
         </section>
 
         <!-- Car Info -->
@@ -114,12 +140,10 @@
         const urlParams = new URLSearchParams(window.location.search);
         const carId = urlParams.get("id");
 
-        // Helper: force Cloudinary download
         function makeDownloadUrl(url, filename = "document.pdf") {
             if (!url) return "#";
             return url.replace("/upload/", `/upload/fl_attachment:${filename}/`);
         }
-
 
         async function loadCar() {
             if (!carId) {
@@ -166,6 +190,7 @@
             if (car.images && car.images.length > 0) {
                 document.getElementById("currentImage").src = car.images[0];
                 const thumbs = document.getElementById("thumbnails");
+                thumbs.innerHTML = "";
                 car.images.forEach(img => {
                     const thumb = document.createElement("img");
                     thumb.src = img;
@@ -174,6 +199,27 @@
                     };
                     thumbs.appendChild(thumb);
                 });
+
+                // 360 button click → show 360 viewer
+                document.getElementById("view360Btn").onclick = function () {
+                    document.getElementById("static-gallery").style.display = "none";
+                    document.getElementById("viewer360").style.display = "block";
+
+                    $("#car360").spritespin({
+                        source: car.images,
+                        width: 600,
+                        height: 400,
+                        sense: -1,
+                        frameTime: 120,
+                        animate: false
+                    });
+                };
+
+                // Back button click → return to static gallery
+                document.getElementById("backToPhotosBtn").onclick = function () {
+                    document.getElementById("viewer360").style.display = "none";
+                    document.getElementById("static-gallery").style.display = "block";
+                };
             }
         }
 
@@ -209,7 +255,11 @@
         };
     </script>
 
-    <!-- Scripts -->
+    <!-- SpriteSpin JS -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery"></script>
+    <script src="https://cdn.jsdelivr.net/npm/spritespin/release/spritespin.js"></script>
+
+    <!-- Navbar & Footer -->
     <script type="module">
         import { loadNavbar } from "./assets/js/Navbar.js";
         loadNavbar();
