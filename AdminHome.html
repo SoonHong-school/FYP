@@ -59,11 +59,6 @@
         <h2 id="petrolCars">0</h2>
         <p>Petrol Cars</p>
       </div>
-      <div class="stat-card">
-        <i class="fas fa-leaf"></i>
-        <h2 id="hybridCars">0</h2>
-        <p>Hybrid Cars</p>
-      </div>
     </section>
 
     <!-- Charts -->
@@ -142,7 +137,6 @@
           document.getElementById("totalBrands").textContent = brands.size;
           document.getElementById("evCars").textContent = carCounts["ev"] || 0;
           document.getElementById("petrolCars").textContent = carCounts["petrol"] || 0;
-          document.getElementById("hybridCars").textContent = carCounts["hybrid"] || 0;
 
           // Chart.js dynamic chart
           const ctx = document.getElementById("carsChart");
