@@ -6,7 +6,51 @@
   <title>Admin - Manage Cars</title>
   <link rel="stylesheet" href="assets/css/AdminManageCar.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
+
+  <style>
+    .search-container {
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+    }
+
+    .search-container input {
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      width: 250px;
+      font-size: 14px;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .search-container input:focus {
+      border-color: #007bff;
+      box-shadow: 0 0 4px rgba(0, 123, 255, 0.3);
+    }
+
+    .image-preview-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 8px 0;
+    }
+
+    .image-preview-container img {
+      width: 80px;
+      height: 60px;
+      border-radius: 6px;
+      object-fit: cover;
+      border: 1px solid #ccc;
+    }
+
+    label {
+      font-weight: 600;
+      margin-top: 8px;
+      display: block;
+    }
+  </style>
 </head>
 <body>
   <!-- Sidebar -->
@@ -27,6 +71,12 @@
   <!-- Main content -->
   <main class="main-content">
     <h2>Manage Cars</h2>
+
+    <!-- Search Bar -->
+    <div class="search-container">
+      <input type="text" id="searchInput" placeholder="Search by brand, model, or type...">
+    </div>
+
     <table class="cars-table" id="carsTable">
       <thead>
         <tr>
@@ -51,6 +101,7 @@
       <h3>Edit Car</h3>
       <form id="editCarForm">
         <input type="hidden" id="editCarId">
+
         <label>Type</label>
         <select id="editCarType" required>
           <option value="Petrol">Petrol</option>
@@ -87,8 +138,13 @@
         <label>Description</label>
         <input type="text" id="editCarDescription" required>
 
-        <label>Images (Upload new to replace)</label>
+        <label>Exterior Images</label>
+        <div id="currentExteriorImages" class="image-preview-container"></div>
         <input type="file" id="editCarImages" accept="image/*" multiple>
+
+        <label>Interior Images</label>
+        <div id="currentInteriorImages" class="image-preview-container"></div>
+        <input type="file" id="editInteriorImages" accept="image/*" multiple>
 
         <div class="modal-buttons">
           <button type="button" class="close-btn" onclick="closeModal()">Cancel</button>
@@ -111,45 +167,69 @@
       projectId: "carlisting-f88f2",
       storageBucket: "carlisting-f88f2.appspot.com",
       messagingSenderId: "49221518207",
-      appId: "1:49221518207:web:c5e2fd962b802322bfd04a",
-      measurementId: "G-EMFC5Q8FZ5"
+      appId: "1:49221518207:web:c5e2fd962b802322bfd04a"
     };
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
+    const cloudName = "dwxsc3aec";
+    const uploadPreset = "unsigned_preset";
+
     const carsTable = document.getElementById("carsTable").querySelector("tbody");
     const editModal = document.getElementById("editModal");
+    const searchInput = document.getElementById("searchInput");
 
-    // Load cars
+    let allCars = [];
+
     async function loadCars() {
       const snap = await getDocs(collection(db, "cars"));
-      carsTable.innerHTML = "";
+      allCars = [];
       snap.forEach(docSnap => {
         const car = docSnap.data();
+        allCars.push({ id: docSnap.id, ...car });
+      });
+      renderCars(allCars);
+    }
+
+    function renderCars(cars) {
+      carsTable.innerHTML = "";
+      if (cars.length === 0) {
+        carsTable.innerHTML = `<tr><td colspan="7">No cars found.</td></tr>`;
+        return;
+      }
+      cars.forEach(car => {
         const tr = document.createElement("tr");
         tr.innerHTML = `
-          <td><img src="${car.images?.[0] || ''}" alt="Car Image"></td>
+          <td><img src="${car.images?.[0] || ''}" alt="Car Image" style="width:70px;height:auto;border-radius:6px;"></td>
           <td>${car.type || ''}</td>
           <td>${car.brand || ''}</td>
           <td>${car.model || ''}</td>
           <td>${car.year || ''}</td>
           <td>${car.price || ''}</td>
           <td>
-            <button class="action-btn" onclick="openEditModal('${docSnap.id}')"><i class="fas fa-edit"></i> Edit</button>
-            <button class="action-btn delete-btn" onclick="deleteCar('${docSnap.id}')"><i class="fas fa-trash"></i> Delete</button>
+            <button class="action-btn" onclick="openEditModal('${car.id}')"><i class="fas fa-edit"></i> Edit</button>
+            <button class="action-btn delete-btn" onclick="deleteCar('${car.id}')"><i class="fas fa-trash"></i> Delete</button>
           </td>
         `;
         carsTable.appendChild(tr);
       });
     }
 
+    searchInput.addEventListener("input", () => {
+      const query = searchInput.value.trim().toLowerCase();
+      if (query === "") return renderCars(allCars);
+      const filtered = allCars.filter(car =>
+        (car.brand && car.brand.toLowerCase().includes(query)) ||
+        (car.model && car.model.toLowerCase().includes(query)) ||
+        (car.type && car.type.toLowerCase().includes(query))
+      );
+      renderCars(filtered);
+    });
+
     window.openEditModal = async (carId) => {
       const carRef = doc(db, "cars", carId);
-      const carSnap = await getDoc(carRef); // <-- FIXED
-      if (!carSnap.exists()) {
-        alert("Car not found!");
-        return;
-      }
+      const carSnap = await getDoc(carRef);
+      if (!carSnap.exists()) return alert("Car not found!");
       const car = carSnap.data();
 
       document.getElementById("editCarId").value = carId;
@@ -164,24 +244,65 @@
       document.getElementById("editCarColor").value = car.color;
       document.getElementById("editCarDescription").value = car.description;
 
+      // show current exterior images
+      const exteriorDiv = document.getElementById("currentExteriorImages");
+      exteriorDiv.innerHTML = car.images?.length
+        ? car.images.map(url => `<img src="${url}" alt="Car Exterior">`).join("")
+        : "<p>No exterior images</p>";
+
+      // show current interior images
+      const interiorDiv = document.getElementById("currentInteriorImages");
+      interiorDiv.innerHTML = car.interiorImages?.length
+        ? car.interiorImages.map(url => `<img src="${url}" alt="Car Interior">`).join("")
+        : "<p>No interior images</p>";
+
       editModal.style.display = "flex";
     };
 
     window.closeModal = () => editModal.style.display = "none";
 
-    // Delete car
     window.deleteCar = async (carId) => {
-      if(confirm("Are you sure you want to delete this car?")) {
+      if (confirm("Are you sure you want to delete this car?")) {
         await deleteDoc(doc(db, "cars", carId));
         loadCars();
       }
     };
 
-    // Save edits
+    async function uploadImagesToCloudinary(files) {
+      const urls = [];
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("upload_preset", uploadPreset);
+        const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+          method: "POST",
+          body: formData
+        });
+        const data = await res.json();
+        urls.push(data.secure_url);
+      }
+      return urls;
+    }
+
     document.getElementById("editCarForm").addEventListener("submit", async (e) => {
       e.preventDefault();
+
       const id = document.getElementById("editCarId").value;
       const carRef = doc(db, "cars", id);
+      const imageFiles = document.getElementById("editCarImages").files;
+      const interiorFiles = document.getElementById("editInteriorImages").files;
+
+      let newImages = [];
+      let newInterior = [];
+
+      if (imageFiles.length > 0) {
+        newImages = await uploadImagesToCloudinary(imageFiles);
+      }
+
+      if (interiorFiles.length > 0) {
+        newInterior = await uploadImagesToCloudinary(interiorFiles);
+      }
+
       const data = {
         type: document.getElementById("editCarType").value,
         brand: document.getElementById("editCarBrand").value,
@@ -195,6 +316,10 @@
         description: document.getElementById("editCarDescription").value.trim(),
         updatedAt: serverTimestamp()
       };
+
+      if (newImages.length > 0) data.images = newImages;
+      if (newInterior.length > 0) data.interiorImages = newInterior;
+
       await updateDoc(carRef, data);
       closeModal();
       loadCars();

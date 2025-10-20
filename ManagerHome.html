@@ -5,62 +5,89 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Manager | AutoCarMatch</title>
   <link rel="stylesheet" href="assets/css/ManagerHome.css">
-  <link rel="stylesheet" href="assets/css/Footer.css">
-  <link rel="stylesheet" href="assets/css/Navbar.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
+
 <body>
-  <!-- Navbar -->
-  <div id="navbar"></div>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="logo">
+      <a href="AdminHome.html">
+        <img src="assets/images/logo.png" alt="AutoCarMatch Logo" style="height:50px;">
+      </a>
+    </div>
+    <ul class="menu">
+      <li><a href="ManagerHome.html" class="active"><i class="fas fa-home"></i> Dashboard</a></li>
+      <li><a href="ManagerManageAdmin.html"><i class="fas fa-plus-circle"></i> Agent List</a></li>
+      <li><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+    </ul>
+  </aside>
 
-  <header>
-    <h1>Manager Dashboard</h1>
-  </header>
+  <!-- Main Content -->
+  <main class="main-content">
+    <header class="manager-header">
+      <h1><i data-lucide="layout-dashboard"></i> Manager Dashboard</h1>
+    </header>
 
-  <main class="dashboard-container">
     <!-- Summary Cards -->
     <section class="summary-cards">
-      <div class="card">
-        <h3>Pending Agents</h3>
-        <p id="pendingCount">0</p>
+      <div class="card glass-card">
+        <div class="card-icon"><i data-lucide="user-clock"></i></div>
+        <div class="card-info">
+          <h3>Pending Agents</h3>
+          <p id="pendingCount">0</p>
+        </div>
       </div>
-      <div class="card">
-        <h3>Approved Agents</h3>
-        <p id="approvedCount">0</p>
+      <div class="card glass-card">
+        <div class="card-icon"><i data-lucide="user-check"></i></div>
+        <div class="card-info">
+          <h3>Approved Agents</h3>
+          <p id="approvedCount">0</p>
+        </div>
       </div>
     </section>
 
-    <!-- Search Bar -->
+    <!-- Chart -->
+    <div class="chart-container">
+      <canvas id="agentChart"></canvas>
+    </div>
+
+    <!-- Search -->
     <div class="search-bar">
       <input type="text" id="searchInput" placeholder="🔍 Search agents by name or email...">
     </div>
 
+    <!-- Agent Lists -->
     <div class="dashboard">
-      <!-- Pending Agents -->
-      <section class="pending-section">
-        <h2>Pending Agents</h2>
+      <section>
+        <h2><i data-lucide="user-clock"></i> Pending Agents</h2>
         <ul id="pendingList" class="agent-list"></ul>
       </section>
-
-      <!-- Approved Agents -->
-      <section class="approved-section">
-        <h2>Approved Agents</h2>
+      <section>
+        <h2><i data-lucide="user-check"></i> Approved Agents</h2>
         <ul id="approvedList" class="agent-list"></ul>
       </section>
     </div>
+
   </main>
 
-  <!-- Footer -->
-  <div id="footer"></div>
+  <!-- Modal -->
+  <div class="modal" id="viewModal">
+    <div class="modal-content">
+      <h3>Agent Details</h3>
+      <p id="agentInfo"></p>
+      <button class="close-btn" onclick="closeModal()">Close</button>
+    </div>
+  </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { 
-      getFirestore, collection, query, where, updateDoc, doc, onSnapshot 
-    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getFirestore, collection, query, where, updateDoc, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
     import { loadNavbar } from "./assets/js/Navbar.js";
     import { loadFooter } from "./assets/js/Footer.js";
 
-    // Firebase Config
     const firebaseConfig = {
       apiKey: "AIzaSyD882u-zk7FB3YMwL0Nm3_VYD4xsCMt6cQ",
       authDomain: "carlisting-f88f2.firebaseapp.com",
@@ -71,7 +98,6 @@
       measurementId: "G-EMFC5Q8FZ5"
     };
 
-    // Init Firebase
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
@@ -80,78 +106,109 @@
     const pendingCount = document.getElementById("pendingCount");
     const approvedCount = document.getElementById("approvedCount");
     const searchInput = document.getElementById("searchInput");
+    const agentChart = document.getElementById("agentChart");
 
     let pendingAgents = [];
     let approvedAgents = [];
+    let chartInstance = null;
 
-    // Render Pending Agents
-    function renderPendingAgent(docSnap) {
+    function renderAgent(docSnap, type) {
+      const data = docSnap.data();
       return `
         <li>
-          <span>${docSnap.data().name} (${docSnap.data().email})</span>
-          <button class="approve-btn" data-id="${docSnap.id}">Approve</button>
-        </li>
-      `;
+          <span>${data.name} (${data.email})</span>
+          <div>
+            ${type === "pending"
+              ? `<button class="approve-btn" data-id="${docSnap.id}">Approve</button>
+                 <button class="reject-btn" data-id="${docSnap.id}">Reject</button>`
+              : `<button class="view-btn" data-id="${docSnap.id}">View</button>
+                 <button class="reject-btn" data-id="${docSnap.id}">Remove</button>`}
+          </div>
+        </li>`;
     }
 
-    // Render Approved Agents
-    function renderApprovedAgent(docSnap) {
-      return `<li>${docSnap.data().name} (${docSnap.data().email})</li>`;
-    }
-
-    // Filter & Display
-    function displayAgents() {
-      const search = searchInput.value.toLowerCase();
-
-      // Pending
-      pendingList.innerHTML = "";
-      pendingAgents
-        .filter(a => a.data().name.toLowerCase().includes(search) || a.data().email.toLowerCase().includes(search))
-        .forEach(docSnap => {
-          pendingList.innerHTML += renderPendingAgent(docSnap);
-        });
-
-      // Approved
-      approvedList.innerHTML = "";
-      approvedAgents
-        .filter(a => a.data().name.toLowerCase().includes(search) || a.data().email.toLowerCase().includes(search))
-        .forEach(docSnap => {
-          approvedList.innerHTML += renderApprovedAgent(docSnap);
-        });
-
-      // Add event listeners for approve buttons
-      document.querySelectorAll(".approve-btn").forEach(btn => {
-        btn.addEventListener("click", async () => {
-          const id = btn.getAttribute("data-id");
-          await updateDoc(doc(db, "users", id), {
-            role: "agent",
-            approved: true,
-            approvedAt: new Date()
-          });
-        });
+    function updateChart() {
+      const data = {
+        labels: ["Pending", "Approved"],
+        datasets: [{
+          data: [pendingAgents.length, approvedAgents.length],
+          backgroundColor: ["#f4c542", "#4caf50"]
+        }]
+      };
+      if (chartInstance) chartInstance.destroy();
+      chartInstance = new Chart(agentChart, {
+        type: "doughnut",
+        data,
+        options: { 
+          responsive: true, 
+          plugins: { legend: { position: "bottom", labels: { color: "#333" } } } 
+        }
       });
     }
 
-    // Live listener for pending agents
+    function displayAgents() {
+      const search = searchInput.value.toLowerCase();
+      pendingList.innerHTML = pendingAgents
+        .filter(a => a.data().name.toLowerCase().includes(search) || a.data().email.toLowerCase().includes(search))
+        .map(doc => renderAgent(doc, "pending")).join("");
+
+      approvedList.innerHTML = approvedAgents
+        .filter(a => a.data().name.toLowerCase().includes(search) || a.data().email.toLowerCase().includes(search))
+        .map(doc => renderAgent(doc, "approved")).join("");
+
+      // Event listeners
+      document.querySelectorAll(".approve-btn").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const id = btn.dataset.id;
+          await updateDoc(doc(db, "users", id), { role: "agent", approved: true, approvedAt: new Date() });
+        });
+      });
+
+      document.querySelectorAll(".reject-btn").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const id = btn.dataset.id;
+          if (confirm("Remove this agent?")) await deleteDoc(doc(db, "users", id));
+        });
+      });
+
+      document.querySelectorAll(".view-btn").forEach(btn => {
+        btn.addEventListener("click", () => openModal(btn.dataset.id));
+      });
+    }
+
+    async function openModal(agentId) {
+      const snap = pendingAgents.concat(approvedAgents).find(a => a.id === agentId);
+      const d = snap.data();
+      document.getElementById("agentInfo").innerHTML = `
+        <strong>Name:</strong> ${d.name}<br>
+        <strong>Email:</strong> ${d.email}<br>
+        ${d.phone ? `<strong>Phone:</strong> ${d.phone}<br>` : ""}
+        ${d.approvedAt ? `<strong>Approved At:</strong> ${new Date(d.approvedAt.toDate()).toLocaleString()}<br>` : ""}
+      `;
+      document.getElementById("viewModal").style.display = "flex";
+    }
+
+    window.closeModal = () => document.getElementById("viewModal").style.display = "none";
+
     onSnapshot(query(collection(db, "users"), where("role", "==", "pending-agent")), (snapshot) => {
       pendingAgents = snapshot.docs;
       pendingCount.textContent = pendingAgents.length;
       displayAgents();
+      updateChart();
     });
 
-    // Live listener for approved agents
     onSnapshot(query(collection(db, "users"), where("role", "==", "agent")), (snapshot) => {
       approvedAgents = snapshot.docs;
       approvedCount.textContent = approvedAgents.length;
       displayAgents();
+      updateChart();
     });
 
-    // Search input handler
     searchInput.addEventListener("input", displayAgents);
 
-    // Load Navbar & Footer
     loadNavbar();
     loadFooter();
+    lucide.createIcons();
   </script>
 </body>
 </html>
