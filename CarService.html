@@ -63,6 +63,16 @@
   <!-- Footer -->
   <div id="footer"></div>
 
+  <!-- Confirmation Popup -->
+  <div id="confirmationPopup" class="popup-overlay" style="display: none;">
+    <div class="popup-box">
+      <h2>Appointment Confirmed!</h2>
+      <p>Your service appointment has been successfully booked.</p>
+      <button id="confirmOkBtn">Okay</button>
+    </div>
+  </div>
+
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import {
@@ -100,20 +110,35 @@
     const serviceTimeSelect = document.getElementById("serviceTime");
 
     // ====== PROTECT PAGE: REQUIRE LOGIN ======
+    // ====== PROTECT PAGE: REQUIRE LOGIN ======
     onAuthStateChanged(auth, async (user) => {
       if (!user) {
         window.location.href = "Login.html";
         return;
       }
 
-      // Load user's cars from their profile subcollection
       const carsRef = collection(db, "users", user.uid, "cars");
       const querySnapshot = await getDocs(carsRef);
+
+      // Get all cars that already have an active appointment
+      const activeAppointmentsQuery = query(
+        collection(db, "carServiceAppointments"),
+        where("userId", "==", user.uid),
+        where("status", "in", ["pending", "accepted"])
+      );
+      const activeAppointmentsSnap = await getDocs(activeAppointmentsQuery);
+
+      // Store car IDs that are currently booked
+      const carsWithAppointments = new Set();
+      activeAppointmentsSnap.forEach(docSnap => {
+        const data = docSnap.data();
+        if (data.carId) carsWithAppointments.add(data.carId);
+      });
 
       if (querySnapshot.empty) {
         const option = document.createElement("option");
         option.value = "";
-        option.textContent = "⚠️ No cars found. Please add in your profile.";
+        option.textContent = "⚠️ No cars found. Please add one in your profile.";
         userCarSelect.appendChild(option);
         userCarSelect.disabled = true;
       } else {
@@ -127,11 +152,20 @@
             model: car.model,
             number: car.plate
           });
-          option.textContent = `${car.brand} ${car.model} (${car.plate})`;
+
+          // Check if this car is already in an active appointment
+          if (carsWithAppointments.has(docSnap.id)) {
+            option.disabled = true;
+            option.textContent = `${car.brand} ${car.model} (${car.plate}) — 🟡 In Service`;
+          } else {
+            option.textContent = `${car.brand} ${car.model} (${car.plate})`;
+          }
+
           userCarSelect.appendChild(option);
         });
       }
     });
+
 
     // ====== SERVICE OPTIONS BASED ON CAR TYPE ======
     const petrolServices = [
@@ -148,18 +182,78 @@
       { value: "chargerRepair", label: "Charger Repair" }
     ];
 
-    userCarSelect.addEventListener("change", () => {
+    // ====== SERVICE OPTIONS & AUTO-SUGGESTION BASED ON MILEAGE ======
+    userCarSelect.addEventListener("change", async () => {
       serviceTypeSelect.innerHTML = '<option value="">-- Select Service Type --</option>';
+      document.querySelectorAll(".auto-msg").forEach(el => el.remove()); // remove old messages
+
       if (!userCarSelect.value) return;
+
       const carData = JSON.parse(userCarSelect.value);
-      const services = carData.type.toLowerCase() === "ev" ? evServices : petrolServices;
+      const carsRef = collection(db, "users", auth.currentUser.uid, "cars");
+      const carDocs = await getDocs(carsRef);
+      let selectedCarMileage = 0;
+
+      carDocs.forEach(docSnap => {
+        const car = docSnap.data();
+        if (docSnap.id === carData.id) {
+          selectedCarMileage = parseFloat(car.mileage) || 0;
+        }
+      });
+
+      let recommendedService = null;
+      let services = [];
+
+      if (carData.type.toLowerCase() === "ev") {
+        // EV-specific recommendations
+        services = [
+          { value: "evBasic", label: "Basic EV Check (Under 10,000 km)" },
+          { value: "batteryCheck", label: "Battery & Software Update (10,000–20,000 km)" },
+          { value: "evInspection", label: "Full EV Inspection (20,000–40,000 km)" },
+          { value: "electricalCheck", label: "Full Electrical System Check (40,000+ km)" }
+        ];
+
+        if (selectedCarMileage < 10000) recommendedService = services[0];
+        else if (selectedCarMileage < 20000) recommendedService = services[1];
+        else if (selectedCarMileage < 40000) recommendedService = services[2];
+        else recommendedService = services[3];
+      } else {
+        // Petrol/Diesel recommendations
+        services = [
+          { value: "maintenance", label: "General Maintenance (Under 5,000 km)" },
+          { value: "oilChange", label: "Oil Change (5,000–10,000 km)" },
+          { value: "inspection", label: "Full Inspection (10,000–20,000 km)" },
+          { value: "repair", label: "Full Service (20,000+ km)" }
+        ];
+
+        if (selectedCarMileage < 5000) recommendedService = services[0];
+        else if (selectedCarMileage < 10000) recommendedService = services[1];
+        else if (selectedCarMileage < 20000) recommendedService = services[2];
+        else recommendedService = services[3];
+      }
+
+      // Populate dropdown
       services.forEach(service => {
         const option = document.createElement("option");
         option.value = service.value;
         option.textContent = service.label;
         serviceTypeSelect.appendChild(option);
       });
+
+      // Auto-select recommendation
+      if (recommendedService) {
+        serviceTypeSelect.value = recommendedService.value;
+
+        const msg = document.createElement("p");
+        msg.textContent = `✅ Based on your mileage (${selectedCarMileage.toLocaleString()} km), we recommend: ${recommendedService.label}`;
+        msg.style.color = "green";
+        msg.style.marginTop = "8px";
+        msg.classList.add("auto-msg");
+        serviceTypeSelect.insertAdjacentElement("afterend", msg);
+      }
     });
+
+
 
     // ====== DATE RESTRICTIONS ======
     const today = new Date();
@@ -267,7 +361,15 @@
                   createdAt: serverTimestamp(),
                   status: "pending"
                 });
-                alert(`✅ Appointment booked with ${agent.name}!`);
+                // Show custom confirmation popup
+                const popup = document.getElementById("confirmationPopup");
+                popup.style.display = "flex";
+
+                document.getElementById("confirmOkBtn").onclick = () => {
+                  popup.style.display = "none";
+                  window.location.href = "UserProfile.html"; // <-- Change this to your profile page filename
+                };
+
               } catch (err) {
                 console.error(err);
                 alert("❌ Failed to save appointment: " + err.message);

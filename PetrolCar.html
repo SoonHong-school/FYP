@@ -14,76 +14,76 @@
 
   <!-- Filters -->
   <div class="filters">
-  <h2>Filter Petrol Cars</h2>
+    <h2>Filter Petrol Cars</h2>
 
-  <div class="filter-row">
-    <div class="filter-group">
-      <label>Brand:</label>
-      <select id="filterBrand">
-        <option value="">All</option>
-      </select>
-    </div>
+    <div class="filter-row">
+      <div class="filter-group">
+        <label>Brand:</label>
+        <select id="filterBrand">
+          <option value="">All</option>
+        </select>
+      </div>
 
-    <div class="filter-group">
-      <label>Model:</label>
-      <select id="filterModel">
-        <option value="">All</option>
-      </select>
-    </div>
+      <div class="filter-group">
+        <label>Model:</label>
+        <select id="filterModel">
+          <option value="">All</option>
+        </select>
+      </div>
 
-    <div class="filter-group">
-      <label>Year:</label>
-      <select id="filterYear">
-        <option value="">All</option>
-      </select>
-    </div>
+      <div class="filter-group">
+        <label>Year:</label>
+        <select id="filterYear">
+          <option value="">All</option>
+        </select>
+      </div>
 
-    <div class="filter-group">
-      <label>Transmission:</label>
-      <select id="filterTransmission">
-        <option value="">All</option>
-        <option value="Automatic">Automatic</option>
-        <option value="Manual">Manual</option>
-      </select>
-    </div>
-  </div>
-
-  <div class="filter-row">
-    <div class="filter-group">
-      <label>Seats:</label>
-      <select id="filterSeats">
-        <option value="">All</option>
-        <option value="2">2</option>
-        <option value="4">4</option>
-        <option value="5">5</option>
-        <option value="6">6</option>
-      </select>
-    </div>
-
-    <div class="filter-group">
-      <label>Color:</label>
-      <input type="text" id="filterColor" placeholder="e.g. Red">
-    </div>
-
-    <div class="filter-group">
-      <label>Price Range:</label>
-      <div class="range-group">
-        <input type="number" id="minPrice" placeholder="Min RM">
-        <input type="number" id="maxPrice" placeholder="Max RM">
+      <div class="filter-group">
+        <label>Transmission:</label>
+        <select id="filterTransmission">
+          <option value="">All</option>
+          <option value="Automatic">Automatic</option>
+          <option value="Manual">Manual</option>
+        </select>
       </div>
     </div>
 
-    <div class="filter-group">
-      <label>Mileage Range:</label>
-      <div class="range-group">
-        <input type="number" id="minMileage" placeholder="Min KM">
-        <input type="number" id="maxMileage" placeholder="Max KM">
+    <div class="filter-row">
+      <div class="filter-group">
+        <label>Seats:</label>
+        <select id="filterSeats">
+          <option value="">All</option>
+          <option value="2">2</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Color:</label>
+        <input type="text" id="filterColor" placeholder="e.g. Red">
+      </div>
+
+      <div class="filter-group">
+        <label>Price Range:</label>
+        <div class="range-group">
+          <input type="number" id="minPrice" placeholder="Min RM">
+          <input type="number" id="maxPrice" placeholder="Max RM">
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label>Mileage Range:</label>
+        <div class="range-group">
+          <input type="number" id="minMileage" placeholder="Min KM">
+          <input type="number" id="maxMileage" placeholder="Max KM">
+        </div>
       </div>
     </div>
-  </div>
 
-  <button id="applyFilters">Apply Filters</button>
-</div>
+    <button id="applyFilters">Apply Filters</button>
+  </div>
 
 
   <!-- Cars Grid -->
@@ -182,20 +182,52 @@
     }
 
     function populateFilterOptions(cars) {
-      let brands = new Set();
-      let models = new Set();
-      let years = new Set();
+      // Build brand → models mapping
+      const brandModelMap = {};
 
       cars.forEach(car => {
-        if (car.brand) brands.add(car.brand);
-        if (car.model) models.add(car.model);
-        if (car.year) years.add(car.year);
+        if (!brandModelMap[car.brand]) {
+          brandModelMap[car.brand] = new Set();
+        }
+        if (car.model) {
+          brandModelMap[car.brand].add(car.model);
+        }
       });
 
-      filterBrand.innerHTML = `<option value="">All</option>` + [...brands].map(b => `<option value="${b}">${b}</option>`).join("");
-      filterModel.innerHTML = `<option value="">All</option>` + [...models].map(m => `<option value="${m}">${m}</option>`).join("");
+      // Populate Brand dropdown
+      filterBrand.innerHTML = `<option value="">All</option>` +
+        Object.keys(brandModelMap).map(b => `<option value="${b}">${b}</option>`).join("");
+
+      // Function to update Model dropdown based on selected brand
+      function updateModelOptions(selectedBrand) {
+        let models = new Set();
+
+        if (selectedBrand && brandModelMap[selectedBrand]) {
+          models = brandModelMap[selectedBrand];
+        } else {
+          // If no brand selected, show all models
+          Object.values(brandModelMap).forEach(modelSet => {
+            modelSet.forEach(model => models.add(model));
+          });
+        }
+
+        filterModel.innerHTML = `<option value="">All</option>` +
+          [...models].map(m => `<option value="${m}">${m}</option>`).join("");
+      }
+
+      // Initial model population
+      updateModelOptions("");
+
+      // 🔁 Change model list dynamically when brand changes
+      filterBrand.addEventListener("change", () => {
+        updateModelOptions(filterBrand.value);
+      });
+
+      // Optional: repopulate year options
+      const years = new Set(cars.map(c => c.year));
       filterYear.innerHTML = `<option value="">All</option>` + [...years].map(y => `<option value="${y}">${y}</option>`).join("");
     }
+
 
     function applyFilters() {
       let filtered = allCars.filter(car => {
@@ -230,4 +262,5 @@
     loadFooter();
   </script>
 </body>
+
 </html>
