@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Browse Hybrid Cars | AutoCarMatch</title>
+  <link rel="stylesheet" href="assets/css/CarListing.css">
+  <link rel="stylesheet" href="assets/css/Footer.css">
+</head>
+
+<body>
+  <div id="navbar"></div>
+
+  <!-- Filters -->
+  <div class="filters">
+    <h2>Filter Hybrid Cars</h2>
+
+    <div class="filter-row">
+      <div class="filter-group">
+        <label>Brand:</label>
+        <select id="filterBrand">
+          <option value="">All</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Model:</label>
+        <select id="filterModel">
+          <option value="">All</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Year:</label>
+        <select id="filterYear">
+          <option value="">All</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Transmission:</label>
+        <select id="filterTransmission">
+          <option value="">All</option>
+          <option value="Automatic">Automatic</option>
+          <option value="Manual">Manual</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="filter-row">
+      <div class="filter-group">
+        <label>Seats:</label>
+        <select id="filterSeats">
+          <option value="">All</option>
+          <option value="2">2</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Color:</label>
+        <input type="text" id="filterColor" placeholder="e.g. Red">
+      </div>
+
+      <div class="filter-group">
+        <label>Price Range:</label>
+        <div class="range-group">
+          <input type="number" id="minPrice" placeholder="Min RM">
+          <input type="number" id="maxPrice" placeholder="Max RM">
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label>Mileage Range:</label>
+        <div class="range-group">
+          <input type="number" id="minMileage" placeholder="Min KM">
+          <input type="number" id="maxMileage" placeholder="Max KM">
+        </div>
+      </div>
+    </div>
+
+    <button id="applyFilters">Apply Filters</button>
+  </div>
+
+
+  <!-- Cars Grid -->
+  <div class="car-grid" id="carGrid">
+    <p>Loading cars...</p>
+  </div>
+
+  <div id="footer"></div>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyD882u-zk7FB3YMwL0Nm3_VYD4xsCMt6cQ",
+      authDomain: "carlisting-f88f2.firebaseapp.com",
+      projectId: "carlisting-f88f2",
+      storageBucket: "carlisting-f88f2.appspot.com",
+      messagingSenderId: "49221518207",
+      appId: "1:49221518207:web:c5e2fd962b802322bfd04a"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const carGrid = document.getElementById("carGrid");
+    const filterBrand = document.getElementById("filterBrand");
+    const filterModel = document.getElementById("filterModel");
+    const filterYear = document.getElementById("filterYear");
+    const filterTransmission = document.getElementById("filterTransmission");
+    const filterSeats = document.getElementById("filterSeats");
+    const filterColor = document.getElementById("filterColor");
+    const minPrice = document.getElementById("minPrice");
+    const maxPrice = document.getElementById("maxPrice");
+    const minMileage = document.getElementById("minMileage");
+    const maxMileage = document.getElementById("maxMileage");
+
+    let allCars = [];
+
+    // ✅ Get query params from homepage
+    const params = new URLSearchParams(window.location.search);
+    const paramBrand = params.get("brand") || "";
+    const paramPrice = params.get("price") || "";
+    const paramYear = params.get("year") || "";
+
+    async function loadCars() {
+      carGrid.innerHTML = "<p>Loading Hybrid cars...</p>";
+
+      const q = query(collection(db, "cars"), where("type", "==", "Hybrid"));
+      const carsSnap = await getDocs(q);
+
+      allCars = [];
+      carsSnap.forEach(doc => {
+        allCars.push({ id: doc.id, ...doc.data() });
+      });
+
+      populateFilterOptions(allCars);
+
+      // ✅ Pre-fill filters with query params
+      if (paramBrand) filterBrand.value = paramBrand;
+      if (paramYear) filterYear.value = paramYear;
+      if (paramPrice) maxPrice.value = paramPrice;
+
+      // ✅ Apply filters immediately
+      applyFilters();
+    }
+
+    function displayCars(cars) {
+      if (cars.length === 0) {
+        carGrid.innerHTML = "<p>❌ No Hybrid cars found.</p>";
+        return;
+      }
+
+      carGrid.innerHTML = "";
+      cars.forEach(car => {
+        const price = car.price || 0;
+        const downPayment = price * 0.1;
+        const loanAmount = price - downPayment;
+        const monthly = loanAmount / (9 * 12);
+
+        const carCard = document.createElement("div");
+        carCard.className = "car-card";
+        carCard.innerHTML = `
+          <img src="${car.images?.[0] || 'assets/images/no-image.png'}" alt="${car.brand} ${car.model}">
+          <h3>${car.year} ${car.brand} ${car.model}</h3>
+          <div class="monthly-price">
+            RM ${monthly.toFixed(0)}/mo <span class="info-icon" title="10% Down Payment • 9 Years Loan Tenure">ℹ️</span>
+          </div>
+          <p class="price">Car Price: RM ${price?.toLocaleString() || 'N/A'}</p>
+          <p>${car.transmission || ''} | ${car.seats || ''} Seats | ${car.color || ''}</p>
+          <button onclick="window.location.href='CarDetail.html?id=${car.id}'">View Details</button>
+        `;
+        carGrid.appendChild(carCard);
+      });
+    }
+
+    function populateFilterOptions(cars) {
+      // Build brand → models mapping
+      const brandModelMap = {};
+
+      cars.forEach(car => {
+        if (!brandModelMap[car.brand]) {
+          brandModelMap[car.brand] = new Set();
+        }
+        if (car.model) {
+          brandModelMap[car.brand].add(car.model);
+        }
+      });
+
+      // Populate Brand dropdown
+      filterBrand.innerHTML = `<option value="">All</option>` +
+        Object.keys(brandModelMap).map(b => `<option value="${b}">${b}</option>`).join("");
+
+      // Function to update Model dropdown based on selected brand
+      function updateModelOptions(selectedBrand) {
+        let models = new Set();
+
+        if (selectedBrand && brandModelMap[selectedBrand]) {
+          models = brandModelMap[selectedBrand];
+        } else {
+          // If no brand selected, show all models
+          Object.values(brandModelMap).forEach(modelSet => {
+            modelSet.forEach(model => models.add(model));
+          });
+        }
+
+        filterModel.innerHTML = `<option value="">All</option>` +
+          [...models].map(m => `<option value="${m}">${m}</option>`).join("");
+      }
+
+      // Initial model population
+      updateModelOptions("");
+
+      // 🔁 Change model list dynamically when brand changes
+      filterBrand.addEventListener("change", () => {
+        updateModelOptions(filterBrand.value);
+      });
+
+      // Optional: repopulate year options
+      const years = new Set(cars.map(c => c.year));
+      filterYear.innerHTML = `<option value="">All</option>` + [...years].map(y => `<option value="${y}">${y}</option>`).join("");
+    }
+
+
+    function applyFilters() {
+      let filtered = allCars.filter(car => {
+        return (
+          (!filterBrand.value || car.brand === filterBrand.value) &&
+          (!filterModel.value || car.model === filterModel.value) &&
+          (!filterYear.value || car.year == filterYear.value) &&
+          (!filterTransmission.value || car.transmission === filterTransmission.value) &&
+          (!filterSeats.value || car.seats == filterSeats.value) &&
+          (!filterColor.value || car.color?.toLowerCase().includes(filterColor.value.toLowerCase())) &&
+          (!minPrice.value || car.price >= parseFloat(minPrice.value)) &&
+          (!maxPrice.value || car.price <= parseFloat(maxPrice.value)) &&
+          (!minMileage.value || car.mileage >= parseFloat(minMileage.value)) &&
+          (!maxMileage.value || car.mileage <= parseFloat(maxMileage.value))
+        );
+      });
+      displayCars(filtered);
+    }
+
+    document.getElementById("applyFilters").addEventListener("click", applyFilters);
+
+    loadCars();
+  </script>
+
+  <!-- Navbar & Footer -->
+  <script type="module">
+    import { loadNavbar } from "./assets/js/Navbar.js";
+    loadNavbar();
+  </script>
+  <script type="module">
+    import { loadFooter } from "./assets/js/Footer.js";
+    loadFooter();
+  </script>
+</body>
+
+</html>

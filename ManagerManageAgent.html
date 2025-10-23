@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agent List | Manager</title>
+  <link rel="stylesheet" href="assets/css/ManagerManageAgent.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* Minimal styles for the searchable dropdown */
+    .searchable {
+      position: relative;
+      max-width: 520px;
+    }
+    #agentSearch {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+    .dropdown-list {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      right: 0;
+      max-height: 280px;
+      overflow-y: auto;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+      z-index: 50;
+    }
+    .dropdown-item {
+      padding: 10px 12px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .dropdown-item:hover,
+    .dropdown-item.active {
+      background: #f2f6ff;
+    }
+    .dropdown-empty {
+      padding: 10px 12px;
+      color: #666;
+    }
+    .search-hint {
+      margin-top: 6px;
+      color: #666;
+      font-size: 13px;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="logo">
+      <a href="ManagerHome.html">
+        <img src="assets/images/logo.png" alt="AutoCarMatch Logo" style="height:50px;">
+      </a>
+    </div>
+    <ul class="menu">
+      <li><a href="ManagerHome.html"><i class="fas fa-home"></i> Dashboard</a></li>
+      <li><a href="ManagerAgentList.html" class="active"><i class="fas fa-users"></i> Agent List</a></li>
+      <li><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+    </ul>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <header class="manager-header">
+      <h1><i class="fas fa-users"></i> Agent Performance</h1>
+    </header>
+
+    <!-- Agent Selection (searchable) -->
+    <section class="filter-section">
+      <label for="agentSearch">Find agent (name or email):</label>
+      <div class="searchable" id="agentSearchWrap">
+        <input id="agentSearch" placeholder="Type agent name or email — e.g. John or john@example.com" autocomplete="off" />
+        <div id="agentDropdown" class="dropdown-list" style="display:none;" role="listbox" aria-label="Agent suggestions"></div>
+      </div>
+      <div class="search-hint">Use arrow keys + Enter to select. Showing up to 50 matches.</div>
+      <!-- hidden selected agent id -->
+      <input type="hidden" id="selectedAgentId" />
+    </section>
+
+    <!-- Agent Stats -->
+    <section id="agentStats" style="display:none; margin-top:20px;">
+      <h2 id="agentNameDisplay"></h2>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <i class="fas fa-calendar-check"></i>
+          <h2 id="doneCount">0</h2>
+          <p>Done</p>
+        </div>
+        <div class="stat-card">
+          <i class="fas fa-spinner"></i>
+          <h2 id="pendingCount">0</h2>
+          <p>Pending</p>
+        </div>
+        <div class="stat-card">
+          <i class="fas fa-clock"></i>
+          <h2 id="acceptedCount">0</h2>
+          <p>Accepted (Upcoming)</p>
+        </div>
+        <div class="stat-card">
+          <i class="fas fa-times-circle"></i>
+          <h2 id="declinedCount">0</h2>
+          <p>Declined</p>
+        </div>
+      </div>
+
+      <div class="chart-container" style="max-width:480px;margin-top:16px;">
+        <canvas id="agentChart"></canvas>
+      </div>
+
+      <div style="margin-top:18px;">
+        <h3>Recent Appointments</h3>
+        <ul id="recentAppointments">
+          <li>No appointments</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, query, where, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyD882u-zk7FB3YMwL0Nm3_VYD4xsCMt6cQ",
+      authDomain: "carlisting-f88f2.firebaseapp.com",
+      projectId: "carlisting-f88f2",
+      storageBucket: "carlisting-f88f2.appspot.com",
+      messagingSenderId: "49221518207",
+      appId: "1:49221518207:web:c5e2fd962b802322bfd04a",
+      measurementId: "G-EMFC5Q8FZ5"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // DOM
+    const agentSearch = document.getElementById("agentSearch");
+    const agentDropdown = document.getElementById("agentDropdown");
+    const agentSearchWrap = document.getElementById("agentSearchWrap");
+    const selectedAgentIdInput = document.getElementById("selectedAgentId");
+    const agentStats = document.getElementById("agentStats");
+    const agentNameDisplay = document.getElementById("agentNameDisplay");
+    const doneCount = document.getElementById("doneCount");
+    const pendingCount = document.getElementById("pendingCount");
+    const acceptedCount = document.getElementById("acceptedCount");
+    const declinedCount = document.getElementById("declinedCount");
+    const chartCanvas = document.getElementById("agentChart");
+    const recentAppointments = document.getElementById("recentAppointments");
+
+    let agentsCache = []; // { id, name, email, label } loaded once
+    let filtered = [];
+    let highlighted = -1;
+    let debounceTimer = null;
+    let chartInstance = null;
+
+    // load all agents into memory once (acceptable for ~500; you can page later)
+    async function loadAgents() {
+      const q = query(collection(db, "users"), where("role", "==", "agent"));
+      const snap = await getDocs(q);
+      agentsCache = snap.docs.map(d => {
+        const o = d.data() || {};
+        const name = (o.name || "").trim();
+        const email = (o.email || "").trim();
+        const label = name ? `${name} — ${email || "—"}` : (email || "Unnamed");
+        return { id: d.id, name, email, label };
+      });
+      // optional: sort alphabetically by name then email
+      agentsCache.sort((a, b) => (a.name || a.email).localeCompare(b.name || b.email));
+    }
+
+    // Render dropdown items (limit to 50 matches)
+    function renderDropdown(items) {
+      agentDropdown.innerHTML = "";
+      highlighted = -1;
+      if (!items.length) {
+        agentDropdown.innerHTML = `<div class="dropdown-empty">No matches</div>`;
+        agentDropdown.style.display = "block";
+        return;
+      }
+      const upTo = items.slice(0, 50);
+      upTo.forEach((it, idx) => {
+        const div = document.createElement("div");
+        div.className = "dropdown-item";
+        div.tabIndex = 0;
+        div.dataset.index = idx;
+        div.dataset.id = it.id;
+        div.innerHTML = `<span>${escapeHtml(it.label)}</span><small style="color:#666">${escapeHtml(it.id)}</small>`;
+        div.addEventListener("click", () => selectAgentByObj(it));
+        div.addEventListener("mouseenter", () => {
+          setHighlight(idx);
+        });
+        agentDropdown.appendChild(div);
+      });
+      if (items.length > 50) {
+        const more = document.createElement("div");
+        more.className = "dropdown-empty";
+        more.textContent = `Showing 50 of ${items.length} results. Refine your search to narrow it down.`;
+        agentDropdown.appendChild(more);
+      }
+      agentDropdown.style.display = "block";
+    }
+
+    // escape to avoid injection in innerHTML
+    function escapeHtml(s) {
+      return (s || "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+    }
+
+    // filter agentsCache by input (name or email contains)
+    function filterAgents(qstr) {
+      const q = (qstr || "").trim().toLowerCase();
+      if (!q) return agentsCache.slice(); // copy
+      const out = [];
+      for (let a of agentsCache) {
+        if ((a.name || "").toLowerCase().includes(q) || (a.email || "").toLowerCase().includes(q) || a.id.toLowerCase().includes(q)) {
+          out.push(a);
+        }
+      }
+      return out;
+    }
+
+    // set highlighted item (visual)
+    function setHighlight(idx) {
+      const items = agentDropdown.querySelectorAll(".dropdown-item");
+      items.forEach(it => it.classList.remove("active"));
+      highlighted = idx;
+      if (idx >= 0 && items[idx]) items[idx].classList.add("active");
+    }
+
+    // choose agent object
+    function selectAgentByObj(agentObj) {
+      agentSearch.value = agentObj.label;
+      selectedAgentIdInput.value = agentObj.id;
+      agentDropdown.style.display = "none";
+      loadAgentStats(agentObj.id, agentObj.label);
+    }
+
+    // keyboard handling
+    agentSearch.addEventListener("keydown", (e) => {
+      const items = agentDropdown.querySelectorAll(".dropdown-item");
+      if (agentDropdown.style.display === "block" && items.length) {
+        if (e.key === "ArrowDown") {
+          e.preventDefault();
+          const next = Math.min(highlighted + 1, items.length - 1);
+          setHighlight(next);
+          items[next].scrollIntoView({ block: "nearest" });
+        } else if (e.key === "ArrowUp") {
+          e.preventDefault();
+          const prev = Math.max(highlighted - 1, 0);
+          setHighlight(prev);
+          items[prev].scrollIntoView({ block: "nearest" });
+        } else if (e.key === "Enter") {
+          e.preventDefault();
+          if (highlighted >= 0 && items[highlighted]) {
+            const id = items[highlighted].dataset.id;
+            const obj = filtered[highlighted];
+            if (obj) selectAgentByObj(obj);
+          } else {
+            // if only one match, pick it
+            if (filtered.length === 1) selectAgentByObj(filtered[0]);
+          }
+        } else if (e.key === "Escape") {
+          agentDropdown.style.display = "none";
+        }
+      }
+    });
+
+    // debounce helper
+    function debounce(fn, wait = 200) {
+      return (...args) => {
+        if (debounceTimer) clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => fn(...args), wait);
+      };
+    }
+
+    // on input
+    agentSearch.addEventListener("input", debounce((ev) => {
+      const q = ev.target.value;
+      filtered = filterAgents(q);
+      renderDropdown(filtered);
+    }, 160));
+
+    // focus => show suggestions
+    agentSearch.addEventListener("focus", (ev) => {
+      const q = ev.target.value;
+      filtered = filterAgents(q);
+      renderDropdown(filtered);
+    });
+
+    // click outside to close
+    document.addEventListener("click", (ev) => {
+      if (!agentSearchWrap.contains(ev.target)) {
+        agentDropdown.style.display = "none";
+      }
+    });
+
+    // load agent stats by matching your agent page logic (carServiceAppointments)
+    async function loadAgentStats(agentId, labelText) {
+      if (!agentId) {
+        agentStats.style.display = "none";
+        return;
+      }
+
+      const appointmentsRef = collection(db, "carServiceAppointments");
+      const q = query(appointmentsRef, where("agentId", "==", agentId));
+      const snap = await getDocs(q);
+
+      let done = 0, pending = 0, accepted = 0, declined = 0;
+      const recent = [];
+
+      snap.forEach(doc => {
+        const d = doc.data();
+        const status = (d.status || "").toString().toLowerCase();
+        if (status === "done") done++;
+        else if (status === "pending") pending++;
+        else if (status === "accepted") accepted++;
+        else if (status === "declined") declined++;
+
+        recent.push({
+          id: doc.id,
+          serviceDate: d.serviceDate || "-",
+          serviceTime: d.serviceTime || "-",
+          carModel: d.carModel || "-",
+          phoneNumber: d.phoneNumber || "-",
+          status: status || "-"
+        });
+      });
+
+      recent.sort((a, b) => (b.serviceDate || "").localeCompare(a.serviceDate || ""));
+
+      doneCount.textContent = done;
+      pendingCount.textContent = pending;
+      acceptedCount.textContent = accepted;
+      declinedCount.textContent = declined;
+
+      agentStats.style.display = "block";
+      agentNameDisplay.textContent = labelText || agentSearch.value || `Agent: ${agentId}`;
+
+      // chart
+      const chartData = {
+        labels: ["Done", "Pending", "Accepted", "Declined"],
+        datasets: [{
+          data: [done, pending, accepted, declined],
+          backgroundColor: ["#4caf50", "#ff9800", "#42a5f5", "#f44336"]
+        }]
+      };
+      if (chartInstance) chartInstance.destroy();
+      chartInstance = new Chart(chartCanvas, {
+        type: "doughnut",
+        data: chartData,
+        options: { plugins: { legend: { position: "bottom" } }, maintainAspectRatio: false }
+      });
+
+      // recent items
+      recentAppointments.innerHTML = "";
+      if (recent.length === 0) {
+        recentAppointments.innerHTML = "<li>No appointments found</li>";
+      } else {
+        recent.slice(0, 10).forEach(r => {
+          const li = document.createElement("li");
+          li.innerHTML = `<strong>${escapeHtml(r.serviceDate)} ${escapeHtml(r.serviceTime)}</strong> — ${escapeHtml(r.carModel)} — ${escapeHtml(r.phoneNumber)} — <em>${escapeHtml(r.status)}</em>`;
+          recentAppointments.appendChild(li);
+        });
+      }
+    }
+
+    // keep stats live: if appointments change, refresh selected agent
+    const appointmentsRef = collection(db, "carServiceAppointments");
+    onSnapshot(appointmentsRef, () => {
+      const selectedAgent = selectedAgentIdInput.value;
+      if (selectedAgent) {
+        // refresh stats for the currently selected agent
+        loadAgentStats(selectedAgent, agentNameDisplay.textContent);
+      }
+    });
+
+    // initial agent load
+    (async function init() {
+      await loadAgents();
+      // optionally prefill with first agent or leave empty
+      // if you'd like to auto-select first agent uncomment below:
+      // if (agentsCache.length) selectAgentByObj(agentsCache[0]);
+    })();
+
+    // simple logout placeholder
+    window.logout = function () {
+      if (confirm("Logout?")) {
+        window.location.href = "Login.html";
+      }
+    };
+  </script>
+</body>
+</html>

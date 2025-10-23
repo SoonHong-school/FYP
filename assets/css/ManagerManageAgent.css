@@ -1,0 +1,243 @@
+/* ====== Base Layout ====== */
+body {
+  font-family: "Inter", "Segoe UI", sans-serif;
+  margin: 0;
+  background: #f5f6fa;
+  color: #1a1a1a;
+  display: flex;
+}
+
+/* ====== Sidebar (same style as ManagerHome for consistency) ====== */
+.sidebar {
+  width: 240px;
+  background: #111;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 25px 20px;
+  position: fixed;
+  height: 100%;
+  border-right: 1px solid #222;
+}
+
+.sidebar .logo img {
+  height: 50px;
+  margin-bottom: 40px;
+}
+
+.sidebar .menu {
+  list-style: none;
+  padding: 0;
+  width: 100%;
+}
+
+.sidebar .menu li {
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.sidebar .menu a {
+  color: #ccc;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 6px;
+  transition: background 0.3s, color 0.3s;
+}
+
+.sidebar .menu a.active,
+.sidebar .menu a:hover {
+  background: #1d1d1d;
+  color: #fff;
+}
+
+/* ====== Main Content ====== */
+.main-content {
+  margin-left: 280px;
+  padding: 25px 30px;
+  width: calc(100% - 260px);
+  box-sizing: border-box;
+}
+
+/* ====== Header ====== */
+.manager-header {
+  background: linear-gradient(135deg, #000000, #1f1f1f);
+  color: #fff;
+  text-align: center;
+  padding: 30px 10px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.manager-header h1 {
+  font-size: 1.8rem;
+  font-weight: 600;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ====== Filter Section ====== */
+.filter-section {
+  background: #fff;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+  margin-top: 30px;
+  max-width: 600px;
+}
+
+.filter-section label {
+  font-weight: 600;
+  display: block;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+/* ====== Stats Section ====== */
+#agentStats {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+  padding: 30px;
+  margin-top: 30px;
+  transition: 0.3s ease;
+}
+
+#agentNameDisplay {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: 25px;
+  text-align: center;
+  color: #222;
+}
+
+/* ====== Stat Grid ====== */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 20px;
+}
+
+.stat-card {
+  background: linear-gradient(145deg, #ffffff, #f3f4f6);
+  border: 1px solid #e1e4e8;
+  border-radius: 14px;
+  text-align: center;
+  padding: 20px 10px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+}
+
+.stat-card i {
+  font-size: 28px;
+  margin-bottom: 10px;
+  color: #007bff;
+}
+
+.stat-card h2 {
+  margin: 5px 0;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #222;
+}
+
+.stat-card p {
+  color: #666;
+  font-size: 0.95rem;
+}
+
+/* ====== Chart Container ====== */
+.chart-container {
+  background: #fff;
+  border-radius: 16px;
+  padding: 25px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+  margin: 0 auto;
+  max-width: 480px;
+  height: 320px;
+}
+
+/* ====== Recent Appointments ====== */
+#recentAppointments {
+  list-style: none;
+  padding: 0;
+  margin-top: 15px;
+}
+
+#recentAppointments li {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 10px;
+  font-size: 0.95rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#recentAppointments li strong {
+  color: #222;
+}
+
+#recentAppointments li em {
+  color: #007bff;
+  font-style: normal;
+  font-weight: 500;
+}
+
+/* ====== Footer ====== */
+footer {
+  text-align: center;
+  padding: 25px 10px;
+  font-size: 0.9rem;
+  color: #777;
+  margin-top: 40px;
+}
+
+/* ====== Scrollbar ====== */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f0f0f0;
+}
+::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}
+
+/* ====== Responsive ====== */
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+    width: 100%;
+    padding: 15px;
+  }
+
+  .sidebar {
+    display: none;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .chart-container {
+    max-width: 100%;
+  }
+}
