@@ -67,7 +67,7 @@
     <ul class="menu">
       <li><a href="ManagerHome.html"><i class="fas fa-home"></i> Dashboard</a></li>
       <li><a href="ManagerAgentList.html" class="active"><i class="fas fa-users"></i> Agent List</a></li>
-      <li><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+      <li><a href="#" id="logoutBtn">Logout</a></li>
     </ul>
   </aside>
 
@@ -132,6 +132,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getFirestore, collection, query, where, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyD882u-zk7FB3YMwL0Nm3_VYD4xsCMt6cQ",
@@ -145,6 +146,7 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    const auth = getAuth(app);
 
     // DOM
     const agentSearch = document.getElementById("agentSearch");
@@ -400,6 +402,26 @@
         window.location.href = "Login.html";
       }
     };
+
+    // ====== LOGOUT HANDLER ======
+    const logoutBtn = document.getElementById("logoutBtn");
+    if (logoutBtn) {
+      logoutBtn.addEventListener("click", async (e) => {
+        e.preventDefault();
+        try {
+          await signOut(auth);
+
+          // Clear local/session storage
+          localStorage.clear();
+          sessionStorage.clear();
+
+          // Redirect
+          window.location.href = "Login.html"; // or Homepage.html
+        } catch (err) {
+          console.error("Logout failed:", err);
+        }
+      });
+    }
   </script>
 </body>
 </html>

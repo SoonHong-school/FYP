@@ -45,8 +45,13 @@
       <label>Role</label>
       <input type="text" id="role" disabled />
 
+      <!-- ✅ New Type Dropdown -->
       <label>Type</label>
-      <input type="text" id="type" disabled />
+      <select id="typeSelect" required>
+        <option value="">-- Select Type --</option>
+        <option value="ev">EV</option>
+        <option value="petrol">Petrol</option>
+      </select>
 
       <button type="submit">Save Changes</button>
     </form>
@@ -94,7 +99,12 @@
           document.getElementById("email").value = data.email || "";
           document.getElementById("phoneNumber").value = data.phoneNumber || "";
           document.getElementById("role").value = data.role || "";
-          document.getElementById("type").value = data.type || "";
+
+          // ✅ Set selected type
+          if (data.type) {
+            document.getElementById("typeSelect").value = data.type;
+          }
+
           if (data.profilePic) {
             document.getElementById("profilePicPreview").src = data.profilePic;
           }
@@ -129,9 +139,12 @@
         profilePicUrl = data.secure_url;
       }
 
+      const typeValue = document.getElementById("typeSelect").value;
+
       await updateDoc(docRef, {
         name: document.getElementById("name").value,
         phoneNumber: document.getElementById("phoneNumber").value,
+        type: typeValue, // ✅ store as "ev" or "petrol"
         ...(profilePicUrl && { profilePic: profilePicUrl })
       });
 
@@ -153,11 +166,8 @@
           localStorage.clear();
           sessionStorage.clear();
 
-          // Reset global variables if needed
-          allAppointments = [];
-
           // Redirect
-          window.location.href = "Login.html"; // or Homepage.html
+          window.location.href = "Login.html";
         } catch (err) {
           console.error("Logout failed:", err);
         }

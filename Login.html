@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,6 +8,7 @@
   <link rel="stylesheet" href="assets/css/Login.css">
   <link rel="stylesheet" href="assets/css/Footer.css">
 </head>
+
 <body>
 
   <!-- Navbar -->
@@ -26,8 +28,11 @@
         <input type="email" id="loginEmail" placeholder="Email" required>
         <input type="password" id="loginPassword" placeholder="Password" required>
         <button type="submit">Login</button>
+
+        <a href="#" id="forgotPasswordLink" class="forgot-link">Forgot Password?</a>
         <p id="loginMessage" class="msg"></p>
       </form>
+
 
       <!-- Register Form -->
       <form id="registerForm" class="form">
@@ -35,11 +40,14 @@
         <input type="text" id="registerName" placeholder="Full Name" required>
         <input type="email" id="registerEmail" placeholder="Email" required>
         <input type="password" id="registerPassword" placeholder="Password" required>
+        <small class="password-note">
+          Password must be at least 8 characters long and include both letters and numbers.
+        </small>
         <input type="password" id="registerConfirmPassword" placeholder="Confirm Password" required>
         <!-- Role Selector -->
         <label for="registerRole">Register as:</label>
         <select id="registerRole" required>
-        <option value="user">Customer</option>
+          <option value="user">Customer</option>
           <option value="agent">Agent</option>
         </select>
         <button type="submit">Register</button>
@@ -53,216 +61,299 @@
 
   <!-- Firebase + Auth + Firestore -->
   <script type="module">
-  import { 
-    initializeApp 
-  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { 
-    getAuth, 
-    createUserWithEmailAndPassword, 
-    signInWithEmailAndPassword, 
-    updateProfile, 
-    sendEmailVerification 
-  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-  import {
-    getFirestore,
-    doc,
-    setDoc,
-    getDoc
-  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import {
+      initializeApp
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import {
+      getAuth,
+      createUserWithEmailAndPassword,
+      signInWithEmailAndPassword,
+      updateProfile,
+      sendEmailVerification,
+      sendPasswordResetEmail
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import {
+      getFirestore,
+      doc,
+      setDoc,
+      getDoc
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-  // Firebase Config
-  const firebaseConfig = {
-    apiKey: "AIzaSyD882u-zk7FB3YMwL0Nm3_VYD4xsCMt6cQ",
-    authDomain: "carlisting-f88f2.firebaseapp.com",
-    projectId: "carlisting-f88f2",
-    storageBucket: "carlisting-f88f2.appspot.com",
-    messagingSenderId: "49221518207",
-    appId: "1:49221518207:web:c5e2fd962b802322bfd04a",
-    measurementId: "G-EMFC5Q8FZ5"
-  };
+    // Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyD882u-zk7FB3YMwL0Nm3_VYD4xsCMt6cQ",
+      authDomain: "carlisting-f88f2.firebaseapp.com",
+      projectId: "carlisting-f88f2",
+      storageBucket: "carlisting-f88f2.appspot.com",
+      messagingSenderId: "49221518207",
+      appId: "1:49221518207:web:c5e2fd962b802322bfd04a",
+      measurementId: "G-EMFC5Q8FZ5"
+    };
 
-  // Init Firebase
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
+    // Init Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-  // ====== NAVBAR LOAD ======
-  fetch("Navbar.html")
-  .then(res => res.text())
-  .then(data => {
-    document.getElementById("navbar").innerHTML = data;
+    // ====== NAVBAR LOAD ======
+    fetch("Navbar.html")
+      .then(res => res.text())
+      .then(data => {
+        document.getElementById("navbar").innerHTML = data;
 
-    // ====== NAVBAR SCRIPT ======
-    const hamburger = document.getElementById("hamburger");
-    const navMenu = document.getElementById("nav-menu");
-    hamburger.addEventListener("click", () => {
-      navMenu.classList.toggle("active");
-      hamburger.innerHTML = navMenu.classList.contains("active") ? "&times;" : "&#9776;";
-    });
+        // ====== NAVBAR SCRIPT ======
+        const hamburger = document.getElementById("hamburger");
+        const navMenu = document.getElementById("nav-menu");
+        hamburger.addEventListener("click", () => {
+          navMenu.classList.toggle("active");
+          hamburger.innerHTML = navMenu.classList.contains("active") ? "&times;" : "&#9776;";
+        });
 
-    document.querySelectorAll(".dropdown-toggle").forEach(toggle => {
-      toggle.addEventListener("click", e => {
-        e.preventDefault();
-        toggle.parentElement.classList.toggle("active");
-      });
-    });
+        document.querySelectorAll(".dropdown-toggle").forEach(toggle => {
+          toggle.addEventListener("click", e => {
+            e.preventDefault();
+            toggle.parentElement.classList.toggle("active");
+          });
+        });
 
-    // ====== LOGIN STATE CHECK ======
-    const isLoggedIn = localStorage.getItem("isLoggedIn");
-    const userName = localStorage.getItem("userName");
+        // ====== LOGIN STATE CHECK ======
+        const isLoggedIn = localStorage.getItem("isLoggedIn");
+        const userName = localStorage.getItem("userName");
 
-    if (isLoggedIn === "true" && userName) {
-      // Find the login link
-      const loginLink = document.querySelector('a[href="Login.html"]');
-      if (loginLink) {
-        // Replace with user + logout
-        loginLink.parentElement.innerHTML = `
+        if (isLoggedIn === "true" && userName) {
+          // Find the login link
+          const loginLink = document.querySelector('a[href="Login.html"]');
+          if (loginLink) {
+            // Replace with user + logout
+            loginLink.parentElement.innerHTML = `
           <div class="user-menu">
             <span>👋 ${userName}</span> | 
             <a href="#" id="logoutBtn">Logout</a>
           </div>
         `;
-      }
+          }
 
-      // Logout button event
-      document.getElementById("logoutBtn").addEventListener("click", (e) => {
-        e.preventDefault();
-        localStorage.removeItem("isLoggedIn");
-        localStorage.removeItem("userName");
-        window.location.href = "Homepage.html"; // reload homepage after logout
+          // Logout button event
+          document.getElementById("logoutBtn").addEventListener("click", (e) => {
+            e.preventDefault();
+            localStorage.removeItem("isLoggedIn");
+            localStorage.removeItem("userName");
+            window.location.href = "Homepage.html"; // reload homepage after logout
+          });
+        }
       });
-    }
-  });
 
-  // ====== TAB SWITCH ======
-  const loginTab = document.getElementById("loginTab");
-  const registerTab = document.getElementById("registerTab");
-  const loginForm = document.getElementById("loginForm");
-  const registerForm = document.getElementById("registerForm");
+    // ====== TAB SWITCH ======
+    const loginTab = document.getElementById("loginTab");
+    const registerTab = document.getElementById("registerTab");
+    const loginForm = document.getElementById("loginForm");
+    const registerForm = document.getElementById("registerForm");
 
-  loginTab.addEventListener("click", () => {
-    loginTab.classList.add("active");
-    registerTab.classList.remove("active");
-    loginForm.classList.add("active");
-    registerForm.classList.remove("active");
-  });
-
-  registerTab.addEventListener("click", () => {
-    registerTab.classList.add("active");
-    loginTab.classList.remove("active");
-    registerForm.classList.add("active");
-    loginForm.classList.remove("active");
-  });
-
-  // ====== LOGIN ======
-document.getElementById("loginForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const email = document.getElementById("loginEmail").value;
-  const password = document.getElementById("loginPassword").value;
-  const loginMessage = document.getElementById("loginMessage");
-
-  try {
-    const userCred = await signInWithEmailAndPassword(auth, email, password);
-
-    if (!userCred.user.emailVerified) {
-      loginMessage.textContent = "⚠️ Please verify your email before logging in.";
-      loginMessage.style.color = "orange";
-      return;
-    }
-
-    // Get role from Firestore
-    const userDoc = await getDoc(doc(db, "users", userCred.user.uid));
-    let role = "user"; // default
-    if (userDoc.exists()) {
-      role = userDoc.data().role || "user";
-    }
-
-    // Block pending agents
-    if (role === "pending-agent") {
-      loginMessage.textContent = "⏳ Your agent account is pending manager approval.";
-      loginMessage.style.color = "orange";
-      return;
-    }
-
-    loginMessage.textContent = "✅ Login successful!";
-    loginMessage.style.color = "green";
-
-    // Save login state for navbar
-    localStorage.setItem("isLoggedIn", "true");
-    localStorage.setItem("userName", userCred.user.displayName || userCred.user.email);
-
-    setTimeout(() => {
-      if (role === "admin") {
-        window.location.href = "AdminHome.html";   // ✅ Admin redirect
-      } else if (role === "manager") {
-        window.location.href = "ManagerHome.html";
-      } else if (role === "agent") {
-        window.location.href = "AgentHome.html";
-      } else {
-        window.location.href = "Homepage.html";
-      }
-    }, 1500);
-
-  } catch (err) {
-    loginMessage.textContent = "❌ " + err.message;
-    loginMessage.style.color = "red";
-  }
-});
-
-
-
-  // ====== REGISTER ======
-document.getElementById("registerForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const name = document.getElementById("registerName").value;
-  const email = document.getElementById("registerEmail").value;
-  const password = document.getElementById("registerPassword").value;
-  const confirmPassword = document.getElementById("registerConfirmPassword").value;
-  const role = document.getElementById("registerRole").value;
-  const registerMessage = document.getElementById("registerMessage");
-
-  if (password !== confirmPassword) {
-    registerMessage.textContent = "❌ Passwords do not match!";
-    registerMessage.style.color = "red";
-    return;
-  }
-
-  try {
-    const userCred = await createUserWithEmailAndPassword(auth, email, password);
-    await updateProfile(userCred.user, { displayName: name });
-
-    // Store role in Firestore
-    let assignedRole = "user"; 
-    let extraData = {};
-
-    if (role === "agent") {
-      assignedRole = "pending-agent"; 
-      extraData = { approved: false };
-    }
-
-    await setDoc(doc(db, "users", userCred.user.uid), {
-      name: name,
-      email: email,
-      role: assignedRole,
-      createdAt: new Date(),
-      ...extraData
+    loginTab.addEventListener("click", () => {
+      loginTab.classList.add("active");
+      registerTab.classList.remove("active");
+      loginForm.classList.add("active");
+      registerForm.classList.remove("active");
     });
 
-    await sendEmailVerification(userCred.user);
+    registerTab.addEventListener("click", () => {
+      registerTab.classList.add("active");
+      loginTab.classList.remove("active");
+      registerForm.classList.add("active");
+      loginForm.classList.remove("active");
+    });
 
-    registerMessage.textContent = "📩 Verification email sent! Please check your inbox.";
-    registerMessage.style.color = "blue";
-  } catch (err) {
-    registerMessage.textContent = "❌ " + err.message;
-    registerMessage.style.color = "red";
-  }
-});
+    // ====== LOGIN ======
+    document.getElementById("loginForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = document.getElementById("loginEmail").value;
+      const password = document.getElementById("loginPassword").value;
+      const loginMessage = document.getElementById("loginMessage");
 
-</script>
-<script type="module">
-  import { loadFooter } from "./assets/js/Footer.js";
-  loadFooter();
+      localStorage.removeItem("isLoggedIn");
+      localStorage.removeItem("userName");
+
+      try {
+        const userCred = await signInWithEmailAndPassword(auth, email, password);
+
+        if (!userCred.user.emailVerified) {
+          loginMessage.textContent = "⚠️ Please verify your email before logging in.";
+          loginMessage.style.color = "orange";
+          await auth.signOut(); // ✅ ensure not logged in
+          return;
+        }
+
+
+        // Get role from Firestore
+        const userDoc = await getDoc(doc(db, "users", userCred.user.uid));
+        let role = "user"; // default
+        if (userDoc.exists()) {
+          role = userDoc.data().role || "user";
+        }
+
+        // Block pending agents
+        if (role === "pending-agent") {
+          loginMessage.textContent = "⏳ Your agent account is pending manager approval.";
+          loginMessage.style.color = "orange";
+
+          // ✅ Clear any leftover login state
+          localStorage.removeItem("isLoggedIn");
+          localStorage.removeItem("userName");
+
+          // ✅ Sign out from Firebase (ensure not logged in)
+          await auth.signOut();
+
+          return;
+        }
+
+
+        loginMessage.textContent = "✅ Login successful!";
+        loginMessage.style.color = "green";
+
+        // Save login state for navbar
+        localStorage.setItem("isLoggedIn", "true");
+        localStorage.setItem("userName", userCred.user.displayName || userCred.user.email);
+
+        setTimeout(() => {
+          if (role === "admin") {
+            window.location.href = "AdminHome.html";   // ✅ Admin redirect
+          } else if (role === "manager") {
+            window.location.href = "ManagerHome.html";
+          } else if (role === "agent") {
+            window.location.href = "AgentHome.html";
+          } else {
+            window.location.href = "Homepage.html";
+          }
+        }, 1500);
+
+      } catch (err) {
+        let errorMessage = "❌ An error occurred. Please try again.";
+
+        if (err.code === "auth/invalid-credential") {
+          errorMessage = "❌ No user found with this email or invalid password.";
+        } else if (err.code === "auth/invalid-email") {
+          errorMessage = "❌ Invalid email format.";
+        } else if (err.code === "auth/user-disabled") {
+          errorMessage = "❌ This account has been disabled.";
+        } else if (err.code === "auth/too-many-requests") {
+          errorMessage = "❌ Too many failed attempts. Try again later.";
+        }
+
+        loginMessage.textContent = errorMessage;
+        loginMessage.style.color = "red";
+      }
+
+    });
+
+    // ====== REGISTER ======
+    document.getElementById("registerForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const name = document.getElementById("registerName").value;
+      const email = document.getElementById("registerEmail").value;
+      const password = document.getElementById("registerPassword").value;
+      const confirmPassword = document.getElementById("registerConfirmPassword").value;
+      const role = document.getElementById("registerRole").value;
+      const registerMessage = document.getElementById("registerMessage");
+
+      const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+
+      if (password !== confirmPassword) {
+        registerMessage.textContent = "❌ Passwords do not match!";
+        registerMessage.style.color = "red";
+        return;
+      }
+
+      if (!passwordRegex.test(password)) {
+        registerMessage.textContent = "⚠️ Password must be at least 8 characters long and include both letters and numbers.";
+        registerMessage.style.color = "orange";
+        return;
+      }
+
+      try {
+        const userCred = await createUserWithEmailAndPassword(auth, email, password);
+        await updateProfile(userCred.user, { displayName: name });
+
+        let assignedRole = "user";
+        let extraData = {};
+
+        if (role === "agent") {
+          assignedRole = "pending-agent";
+          extraData = { approved: false };
+        }
+
+        await setDoc(doc(db, "users", userCred.user.uid), {
+          name: name,
+          email: email,
+          role: assignedRole,
+          createdAt: new Date(),
+          ...extraData
+        });
+
+        await sendEmailVerification(userCred.user);
+
+        if (assignedRole === "pending-agent") {
+          registerMessage.textContent = "⏳ Your agent account is pending manager approval. Please wait for approval before logging in.";
+          registerMessage.style.color = "orange";
+
+          // Immediately sign out the agent
+          await auth.signOut();
+          localStorage.removeItem("isLoggedIn");
+          localStorage.removeItem("userName");
+        } else {
+          registerMessage.textContent = "📩 Verification email sent! Please check your inbox.";
+          registerMessage.style.color = "blue";
+
+          // Optional: sign out after registration (so they must verify before login)
+          await auth.signOut();
+        }
+
+
+        registerMessage.textContent = "📩 Verification email sent! Please check your inbox.";
+        registerMessage.style.color = "blue";
+      } catch (err) {
+        registerMessage.textContent = "❌ " + err.message;
+        registerMessage.style.color = "red";
+      }
+    });
+
+    // ====== FORGOT PASSWORD ======
+    document.getElementById("forgotPasswordLink").addEventListener("click", async (e) => {
+      e.preventDefault();
+      const email = document.getElementById("loginEmail").value.trim();
+      const loginMessage = document.getElementById("loginMessage");
+
+      if (!email) {
+        loginMessage.textContent = "⚠️ Please enter your email first.";
+        loginMessage.style.color = "orange";
+        return;
+      }
+
+      try {
+        await sendPasswordResetEmail(auth, email);
+        loginMessage.textContent = "📩 Password reset email sent! Please check your inbox.";
+        loginMessage.style.color = "blue";
+      } catch (err) {
+        let errorMessage = "❌ Failed to send reset email.";
+
+        if (err.code === "auth/user-not-found") {
+          errorMessage = "❌ No account found with this email.";
+        } else if (err.code === "auth/invalid-email") {
+          errorMessage = "❌ Invalid email address format.";
+        }
+
+        loginMessage.textContent = errorMessage;
+        loginMessage.style.color = "red";
+      }
+    });
+
+
+
+  </script>
+  <script type="module">
+    import { loadFooter } from "./assets/js/Footer.js";
+    loadFooter();
   </script>
 
 </body>
+
 </html>
