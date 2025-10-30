@@ -110,7 +110,7 @@
       </div>
     </section>
 
-        <!-- ✅ Interior Photos Section -->
+    <!-- ✅ Interior Photos Section -->
     <section class="car-section interior-gallery" id="interior-section" style="display:none;">
       <h2>Interior Photos</h2>
       <div class="interior-main">
@@ -141,10 +141,11 @@
         <p><strong>Description:</strong> <span id="carDescription"></span></p>
       </div>
       <div id="specs" class="tab-content">
-        <p>⚙ Engine: 2.0L Turbo (Example)</p>
-        <p>📏 Dimensions: 4,500mm x 1,800mm x 1,600mm</p>
-        <p>🛡 Safety: ABS, Airbags, Lane Assist</p>
+        <p>⚙ Engine: <span id="carEngine"></span></p>
+        <p>📏 Dimensions: <span id="carDimensions"></span></p>
+        <p>🛡 Safety: <span id="carSafety"></span></p>
       </div>
+
     </section>
 
     <!-- Financing -->
@@ -219,6 +220,10 @@
       document.getElementById("carMileage").innerText = car.mileage ? `${car.mileage.toLocaleString()} km` : "N/A";
       document.getElementById("carColor").innerText = car.color || "N/A";
       document.getElementById("carDescription").innerText = car.description || "No description provided.";
+      document.getElementById("carEngine").innerText = car.engine || "Not specified";
+      document.getElementById("carDimensions").innerText = car.dimensions || "Not specified";
+      document.getElementById("carSafety").innerText = car.safety || "Not specified";
+
 
       // PDFs
       if (car.pricePdf) {

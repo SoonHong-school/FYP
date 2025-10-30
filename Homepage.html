@@ -170,17 +170,21 @@
       const year = document.getElementById("filterYear").value;
 
       if (!type) {
-        alert("Please select EV or Petrol first!");
+        alert("Please select EV, Petrol or Hybrid first!");
         return;
       }
 
       // Choose page based on type
-      const page = type === "EV" ? "EvCar.html" : "PetrolCar.html";
+      let page = "";
+      if (type === "EV") page = "EvCar.html";
+      else if (type === "Hybrid") page = "HybridCar.html";
+      else page = "PetrolCar.html";
 
       // Redirect with query params
       const params = new URLSearchParams({ brand, price, year });
       window.location.href = `${page}?${params.toString()}`;
     });
+
 
     // Init
     loadLatestCars();
@@ -231,4 +235,5 @@
   </script>
 
 </body>
+
 </html>

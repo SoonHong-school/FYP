@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -52,6 +53,7 @@
     }
   </style>
 </head>
+
 <body>
   <!-- Sidebar -->
   <aside class="sidebar">
@@ -64,7 +66,7 @@
       <li><a href="AdminHome.html"><i class="fas fa-home"></i> Dashboard</a></li>
       <li><a href="AdminAddCar.html"><i class="fas fa-plus-circle"></i> Insert Car</a></li>
       <li><a href="AdminManageCars.html" class="active"><i class="fas fa-cogs"></i> Manage Cars</a></li>
-      <li><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+      <li><a href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
     </ul>
   </aside>
 
@@ -90,7 +92,9 @@
         </tr>
       </thead>
       <tbody>
-        <tr><td colspan="7">Loading cars...</td></tr>
+        <tr>
+          <td colspan="7">Loading cars...</td>
+        </tr>
       </tbody>
     </table>
   </main>
@@ -106,6 +110,7 @@
         <select id="editCarType" required>
           <option value="Petrol">Petrol</option>
           <option value="EV">EV</option>
+          <option value="Hybrid">Hybrid</option>
         </select>
 
         <label>Brand</label>
@@ -138,6 +143,16 @@
         <label>Description</label>
         <input type="text" id="editCarDescription" required>
 
+        <label>Engine</label>
+        <input type="text" id="editCarEngine" required>
+
+        <label>Dimension</label>
+        <input type="text" id="editCarDimension" required>
+
+        <label>Safety</label>
+        <input type="text" id="editCarSafety" required>
+
+
         <label>Exterior Images</label>
         <div id="currentExteriorImages" class="image-preview-container"></div>
         <input type="file" id="editCarImages" accept="image/*" multiple>
@@ -157,9 +172,10 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { 
-      getFirestore, collection, getDocs, doc, getDoc, deleteDoc, updateDoc, serverTimestamp 
+    import {
+      getFirestore, collection, getDocs, doc, getDoc, deleteDoc, updateDoc, serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyD882u-zk7FB3YMwL0Nm3_VYD4xsCMt6cQ",
@@ -171,6 +187,8 @@
     };
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    const auth = getAuth(app);
+
 
     const cloudName = "dwxsc3aec";
     const uploadPreset = "unsigned_preset";
@@ -243,6 +261,10 @@
       document.getElementById("editCarMileage").value = car.mileage;
       document.getElementById("editCarColor").value = car.color;
       document.getElementById("editCarDescription").value = car.description;
+      document.getElementById("editCarEngine").value = car.engine;
+      document.getElementById("editCarDimension").value = car.dimension;
+      document.getElementById("editCarSafety").value = car.safety;
+
 
       // show current exterior images
       const exteriorDiv = document.getElementById("currentExteriorImages");
@@ -314,7 +336,10 @@
         mileage: parseInt(document.getElementById("editCarMileage").value),
         color: document.getElementById("editCarColor").value.trim(),
         description: document.getElementById("editCarDescription").value.trim(),
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
+        engine: document.getElementById("editCarEngine").value.trim(),
+        dimension: document.getElementById("editCarDimension").value.trim(),
+        safety: document.getElementById("editCarSafety").value.trim(),
       };
 
       if (newImages.length > 0) data.images = newImages;
@@ -326,6 +351,29 @@
     });
 
     loadCars();
+
+
+    // ====== LOGOUT HANDLER ======
+    const logoutBtn = document.getElementById("logoutBtn");
+    if (logoutBtn) {
+      logoutBtn.addEventListener("click", async (e) => {
+        e.preventDefault();
+        try {
+          await signOut(auth);
+
+          // Clear local/session storage
+          localStorage.clear();
+          sessionStorage.clear();
+
+          // Redirect to login
+          window.location.href = "Login.html";
+        } catch (err) {
+          console.error("Logout failed:", err);
+        }
+      });
+    }
+
   </script>
 </body>
+
 </html>

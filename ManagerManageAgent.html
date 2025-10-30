@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -13,6 +14,7 @@
       position: relative;
       max-width: 520px;
     }
+
     #agentSearch {
       width: 100%;
       padding: 10px 12px;
@@ -20,6 +22,7 @@
       border: 1px solid #ccc;
       box-sizing: border-box;
     }
+
     .dropdown-list {
       position: absolute;
       top: calc(100% + 6px);
@@ -30,9 +33,10 @@
       background: #fff;
       border: 1px solid #ddd;
       border-radius: 6px;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
       z-index: 50;
     }
+
     .dropdown-item {
       padding: 10px 12px;
       cursor: pointer;
@@ -40,14 +44,17 @@
       justify-content: space-between;
       gap: 8px;
     }
+
     .dropdown-item:hover,
     .dropdown-item.active {
       background: #f2f6ff;
     }
+
     .dropdown-empty {
       padding: 10px 12px;
       color: #666;
     }
+
     .search-hint {
       margin-top: 6px;
       color: #666;
@@ -61,69 +68,64 @@
   <aside class="sidebar">
     <div class="logo">
       <a href="ManagerHome.html">
-        <img src="assets/images/logo.png" alt="AutoCarMatch Logo" style="height:50px;">
+        <img src="assets/images/logo.png" alt="AutoCareMatch Logo" class="logo-img">
       </a>
     </div>
     <ul class="menu">
-      <li><a href="ManagerHome.html"><i class="fas fa-home"></i> Dashboard</a></li>
-      <li><a href="ManagerAgentList.html" class="active"><i class="fas fa-users"></i> Agent List</a></li>
-      <li><a href="#" id="logoutBtn">Logout</a></li>
+      <li><a href="ManagerHome.html"><i class="fas fa-chart-pie"></i> Dashboard</a></li>
+      <li><a href="ManagerManageAgent.html" class="active"><i class="fas fa-users"></i> Agent List</a></li>
+      <li><a href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
     </ul>
   </aside>
 
   <!-- Main Content -->
   <main class="main-content">
     <header class="manager-header">
-      <h1><i class="fas fa-users"></i> Agent Performance</h1>
+      <h1><i class="fas fa-users"></i> Agent Performance Dashboard</h1>
     </header>
 
-    <!-- Agent Selection (searchable) -->
-    <section class="filter-section">
-      <label for="agentSearch">Find agent (name or email):</label>
+    <section class="filter-section glass-card">
+      <label for="agentSearch" class="section-label">Search Agent</label>
       <div class="searchable" id="agentSearchWrap">
-        <input id="agentSearch" placeholder="Type agent name or email — e.g. John or john@example.com" autocomplete="off" />
-        <div id="agentDropdown" class="dropdown-list" style="display:none;" role="listbox" aria-label="Agent suggestions"></div>
+        <input id="agentSearch" placeholder="Search by name or email..." autocomplete="off" />
+        <div id="agentDropdown" class="dropdown-list" style="display:none;"></div>
       </div>
-      <div class="search-hint">Use arrow keys + Enter to select. Showing up to 50 matches.</div>
-      <!-- hidden selected agent id -->
-      <input type="hidden" id="selectedAgentId" />
+      <input type="hidden" id="selectedAgentId">
+      <p class="search-hint">Tip: Type at least 2 characters to search (shows up to 50 results)</p>
     </section>
 
-    <!-- Agent Stats -->
-    <section id="agentStats" style="display:none; margin-top:20px;">
-      <h2 id="agentNameDisplay"></h2>
+    <section id="agentStats" class="glass-card" style="display:none;">
+      <div class="agent-header">
+        <h2 id="agentNameDisplay"></h2>
+      </div>
 
       <div class="stats-grid">
-        <div class="stat-card">
-          <i class="fas fa-calendar-check"></i>
+        <div class="stat-card done"><i class="fas fa-check-circle"></i>
           <h2 id="doneCount">0</h2>
           <p>Done</p>
         </div>
-        <div class="stat-card">
-          <i class="fas fa-spinner"></i>
+        <div class="stat-card pending"><i class="fas fa-spinner"></i>
           <h2 id="pendingCount">0</h2>
           <p>Pending</p>
         </div>
-        <div class="stat-card">
-          <i class="fas fa-clock"></i>
+        <div class="stat-card accepted"><i class="fas fa-clock"></i>
           <h2 id="acceptedCount">0</h2>
-          <p>Accepted (Upcoming)</p>
+          <p>Accepted</p>
         </div>
-        <div class="stat-card">
-          <i class="fas fa-times-circle"></i>
+        <div class="stat-card declined"><i class="fas fa-times-circle"></i>
           <h2 id="declinedCount">0</h2>
           <p>Declined</p>
         </div>
       </div>
 
-      <div class="chart-container" style="max-width:480px;margin-top:16px;">
+      <div class="chart-container">
         <canvas id="agentChart"></canvas>
       </div>
 
-      <div style="margin-top:18px;">
+      <div class="recent-section">
         <h3>Recent Appointments</h3>
-        <ul id="recentAppointments">
-          <li>No appointments</li>
+        <ul id="recentAppointments" class="recent-list">
+          <li>No appointments found</li>
         </ul>
       </div>
     </section>
@@ -424,4 +426,5 @@
     }
   </script>
 </body>
+
 </html>

@@ -123,6 +123,16 @@
             <label for="carDescription">Description</label>
             <input type="text" id="carDescription" placeholder="Input the text here" required>
 
+            <label for="carEngine">⚙ Engine</label>
+            <input type="text" id="carEngine" placeholder="e.g. 2.0L Turbo" required>
+
+            <label for="carDimensions">📏 Dimensions</label>
+            <input type="text" id="carDimensions" placeholder="e.g. 4,500mm x 1,800mm x 1,600mm" required>
+
+            <label for="carSafety">🛡 Safety</label>
+            <input type="text" id="carSafety" placeholder="e.g. ABS, Airbags, Lane Assist" required>
+
+
             <label for="pricePdf">Upload Price PDF</label>
             <input type="file" id="pricePdf" accept="application/pdf">
 
@@ -151,6 +161,7 @@
       <!-- Firebase + Cloudinary Logic -->
       <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
         import { getFirestore, collection, addDoc, getDocs, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -164,6 +175,7 @@
         };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const auth = getAuth(app);
 
         const CLOUD_NAME = "dwxsc3aec";
         const UPLOAD_PRESET = "unsigned_preset";
@@ -378,12 +390,16 @@
             await addDoc(collection(db, "cars"), {
               type, brand, model, year, price,
               transmission, seats, mileage, color, description,
+              engine: document.getElementById("carEngine").value.trim(),
+              dimensions: document.getElementById("carDimensions").value.trim(),
+              safety: document.getElementById("carSafety").value.trim(),
               images: uploadedUrls,
               interiorImages: interiorUploadedUrls,
               pricePdf: pricePdfUrl,
               brochurePdf: brochurePdfUrl,
               createdAt: serverTimestamp()
             });
+
 
             msg.textContent = "✅ Car, brand, model, and images added successfully!";
             msg.style.color = "green";
@@ -409,16 +425,14 @@
               localStorage.clear();
               sessionStorage.clear();
 
-              // Reset global variables if needed
-              allAppointments = [];
-
-              // Redirect
-              window.location.href = "Login.html"; // or Homepage.html
+              // Redirect to login
+              window.location.href = "Login.html";
             } catch (err) {
               console.error("Logout failed:", err);
             }
           });
         }
+
       </script>
     </main>
   </div>

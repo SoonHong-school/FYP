@@ -6,8 +6,9 @@
 body {
   margin: 0;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  background: #ffffff;
-  color: #000000;
+  background: url("../images/adminaddcarbackground.jpg") no-repeat center center fixed;
+  background-size: cover;
+  color: #ffffff;
 }
 
 /* Sidebar */
@@ -81,7 +82,6 @@ body {
   margin-left: 250px;
   flex: 1;
   padding: 40px 50px;
-  background: #f7f9fc;
   min-height: 100vh;
 }
 

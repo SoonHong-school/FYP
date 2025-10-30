@@ -1,12 +1,11 @@
 /* ====== Base ====== */
 body {
-  font-family: "Inter", "Segoe UI", sans-serif;
+  font-family: "Inter", sans-serif;
   margin: 0;
-  background: linear-gradient(135deg, #f9fafc 0%, #eef1f6 100%);
-  color: #1a1a1a;
   display: flex;
+  background: linear-gradient(135deg, #e0f2fe, #f8fafc);
+  color: #0f172a;
   min-height: 100vh;
-  overflow-x: hidden;
 }
 
 /* ====== Sidebar ====== */
