@@ -170,7 +170,7 @@
     let debounceTimer = null;
     let chartInstance = null;
 
-    // load all agents into memory once (acceptable for ~500; you can page later)
+    // load all agents 
     async function loadAgents() {
       const q = query(collection(db, "users"), where("role", "==", "agent"));
       const snap = await getDocs(q);
@@ -181,11 +181,10 @@
         const label = name ? `${name} — ${email || "—"}` : (email || "Unnamed");
         return { id: d.id, name, email, label };
       });
-      // optional: sort alphabetically by name then email
       agentsCache.sort((a, b) => (a.name || a.email).localeCompare(b.name || b.email));
     }
 
-    // Render dropdown items (limit to 50 matches)
+    // Render dropdown items 
     function renderDropdown(items) {
       agentDropdown.innerHTML = "";
       highlighted = -1;

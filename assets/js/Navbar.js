@@ -1,4 +1,3 @@
-// Navbar.js
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
@@ -36,7 +35,7 @@ export function loadNavbar() {
       onAuthStateChanged(auth, async (user) => {
         const loginLink = document.querySelector('a[href="Login.html"]');
         if (user) {
-          let profilePicUrl = "assets/images/default-avatar.png"; // fallback
+          let profilePicUrl = "assets/images/default-avatar.png"; 
           let displayName = user.displayName || user.email;
 
           try {
@@ -84,7 +83,6 @@ export function loadNavbar() {
               try {
                 await signOut(auth);
 
-                // Clear local/session storage to remove cached user data
                 localStorage.clear();
                 sessionStorage.clear();
 
@@ -96,7 +94,6 @@ export function loadNavbar() {
             });
           }
         } else {
-          // User is logged out → do nothing (Login/Register stays visible)
         }
       });
     })

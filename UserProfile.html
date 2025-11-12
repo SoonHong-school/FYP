@@ -414,7 +414,7 @@
         const data = docSnap.data();
         // Check if appointment belongs to this user and is active
         if (data.userId === uid && ["pending", "accepted"].includes(data.status)) {
-          activePlates.add(data.carNumber); // assuming carNumber stores plate
+          activePlates.add(data.carNumber); 
         }
       });
 

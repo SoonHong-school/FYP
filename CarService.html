@@ -110,7 +110,6 @@
     const serviceTimeSelect = document.getElementById("serviceTime");
 
     // ====== PROTECT PAGE: REQUIRE LOGIN ======
-    // ====== PROTECT PAGE: REQUIRE LOGIN ======
     onAuthStateChanged(auth, async (user) => {
       if (!user) {
         window.location.href = "Login.html";
@@ -367,7 +366,7 @@
 
                 document.getElementById("confirmOkBtn").onclick = () => {
                   popup.style.display = "none";
-                  window.location.href = "UserProfile.html"; // <-- Change this to your profile page filename
+                  window.location.href = "UserProfile.html"; 
                 };
 
               } catch (err) {

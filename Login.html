@@ -179,14 +179,14 @@
         if (!userCred.user.emailVerified) {
           loginMessage.textContent = "⚠️ Please verify your email before logging in.";
           loginMessage.style.color = "orange";
-          await auth.signOut(); // ✅ ensure not logged in
+          await auth.signOut(); 
           return;
         }
 
 
         // Get role from Firestore
         const userDoc = await getDoc(doc(db, "users", userCred.user.uid));
-        let role = "user"; // default
+        let role = "user"; 
         if (userDoc.exists()) {
           role = userDoc.data().role || "user";
         }
@@ -196,11 +196,11 @@
           loginMessage.textContent = "⏳ Your agent account is pending manager approval.";
           loginMessage.style.color = "orange";
 
-          // ✅ Clear any leftover login state
+          // Clear any leftover login state
           localStorage.removeItem("isLoggedIn");
           localStorage.removeItem("userName");
 
-          // ✅ Sign out from Firebase (ensure not logged in)
+          // Sign out from Firebase (ensure not logged in)
           await auth.signOut();
 
           return;
@@ -210,13 +210,12 @@
         loginMessage.textContent = "✅ Login successful!";
         loginMessage.style.color = "green";
 
-        // Save login state for navbar
         localStorage.setItem("isLoggedIn", "true");
         localStorage.setItem("userName", userCred.user.displayName || userCred.user.email);
 
         setTimeout(() => {
           if (role === "admin") {
-            window.location.href = "AdminHome.html";   // ✅ Admin redirect
+            window.location.href = "AdminHome.html";   
           } else if (role === "manager") {
             window.location.href = "ManagerHome.html";
           } else if (role === "agent") {

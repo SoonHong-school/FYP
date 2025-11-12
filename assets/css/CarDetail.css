@@ -22,13 +22,13 @@ body {
   padding: 30px;
   margin-bottom: 30px;
   border-radius: 18px;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.6);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .car-section:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 30px rgba(0,0,0,0.7);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7);
 }
 
 .car-section h2 {
@@ -112,7 +112,7 @@ body {
   font-size: 14px;
   font-weight: 600;
   color: #fff;
-  box-shadow: 0 4px 10px rgba(255,0,0,0.3);
+  box-shadow: 0 4px 10px rgba(255, 0, 0, 0.3);
 }
 
 .overview-info div {
@@ -132,18 +132,18 @@ body {
 }
 
 .inspection-card {
-  background: rgba(255,255,255,0.05);
+  background: rgba(255, 255, 255, 0.05);
   padding: 16px;
   border-radius: 12px;
   text-align: center;
   font-weight: 600;
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   color: #00ff88;
   transition: all 0.3s ease;
 }
 
 .inspection-card:hover {
-  background: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.1);
   transform: translateY(-2px);
 }
 
@@ -162,7 +162,7 @@ body {
   border: none;
   cursor: pointer;
   border-radius: 10px;
-  background: rgba(255,255,255,0.08);
+  background: rgba(255, 255, 255, 0.08);
   font-weight: 600;
   font-size: 1rem;
   color: #ccc;
@@ -170,7 +170,7 @@ body {
 }
 
 .tab-btn:hover {
-  background: rgba(255,255,255,0.15);
+  background: rgba(255, 255, 255, 0.15);
   color: #fff;
 }
 
@@ -196,10 +196,10 @@ body {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  background: rgba(255,255,255,0.05);
+  background: rgba(255, 255, 255, 0.05);
   padding: 20px;
   border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .loan-box label {
@@ -211,14 +211,14 @@ body {
   padding: 12px;
   border: none;
   border-radius: 8px;
-  background: rgba(255,255,255,0.08);
+  background: rgba(255, 255, 255, 0.08);
   color: #fff;
   font-size: 14px;
 }
 
 .loan-box input:focus {
   outline: none;
-  background: rgba(255,255,255,0.15);
+  background: rgba(255, 255, 255, 0.15);
   box-shadow: 0 0 0 2px #ff3333;
 }
 
@@ -230,7 +230,7 @@ body {
   background: #25d366;
   padding: 14px;
   border-radius: 50%;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
   z-index: 1000;
   transition: transform 0.3s ease, background 0.3s ease;
 }
@@ -266,15 +266,100 @@ body {
   background: #3a0000;
 }
 
+/* === Interior Photos Section === */
+.interior-gallery {
+  margin-top: 30px;
+  text-align: center;
+}
+
+.interior-gallery h2 {
+  margin-bottom: 10px;
+  font-size: 22px;
+  color: #ffffff;
+}
+
+.interior-main {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.main-interior {
+  width: 80%;
+  max-width: 700px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  object-fit: cover;
+  cursor: pointer;
+}
+
+.interior-thumbnails {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.interior-thumbnails img {
+  width: 100px;
+  height: 70px;
+  object-fit: cover;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.interior-thumbnails img:hover {
+  transform: scale(1.05);
+}
+
+/* === Image Zoom Overlay === */
+.image-overlay {
+  display: none;
+  position: fixed;
+  z-index: 9999;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.9);
+  justify-content: center;
+  align-items: center;
+}
+
+.image-overlay img {
+  max-width: 90%;
+  max-height: 90%;
+  border-radius: 10px;
+  box-shadow: 0 0 25px rgba(255, 255, 255, 0.2);
+  transition: transform 0.3s ease;
+}
+
+.image-overlay .close-btn {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  font-size: 40px;
+  color: #fff;
+  cursor: pointer;
+  user-select: none;
+}
+
+.image-overlay img:hover {
+  transform: scale(1.02);
+}
+
+.main-image img {
+  cursor: pointer;
+}
 
 /* ================================
    360 Button (Perfect Circle)
    ================================ */
 .view360-btn {
   position: absolute;
-  bottom: 20px;   /* adjust placement */
+  bottom: 20px;
+  /* adjust placement */
   left: 20px;
-  width: 55px;    /* fixed circle size */
+  width: 55px;
+  /* fixed circle size */
   height: 55px;
   background: rgba(0, 0, 0, 0.75);
   border-radius: 50%;
@@ -286,28 +371,34 @@ body {
   transition: all 0.3s ease;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   z-index: 20;
-  overflow: hidden; /* makes sure PNG fits inside circle */
+  overflow: hidden;
+  /* makes sure PNG fits inside circle */
 }
 
 .view360-btn img {
-  max-width: 70%;   /* keep proportions */
+  max-width: 70%;
+  /* keep proportions */
   max-height: 70%;
-  object-fit: contain; /* no stretching */
+  object-fit: contain;
+  /* no stretching */
   display: block;
 }
 
 
 .view360-btn:hover {
-  background: #ff3333; /* red hover effect */
+  background: #ff3333;
+  /* red hover effect */
   transform: scale(1.1);
 }
 
 .main-image {
   position: relative;
   width: 100%;
-  max-width: 800px; /* optional: limit max size */
+  max-width: 800px;
+  /* optional: limit max size */
   margin: auto;
-  background: #000; /* black bg for empty space */
+  background: #000;
+  /* black bg for empty space */
   border-radius: 12px;
   overflow: hidden;
   display: flex;
@@ -318,8 +409,10 @@ body {
 /* Main car image */
 .main-image img {
   max-width: 100%;
-  max-height: 460px;  /* constrain height */
-  object-fit: contain; /* keep proportions, no stretch */
+  max-height: 460px;
+  /* constrain height */
+  object-fit: contain;
+  /* keep proportions, no stretch */
   display: block;
 }
 
@@ -330,7 +423,7 @@ body {
   background: rgba(25, 25, 25, 0.95);
   border-radius: 18px;
   padding: 25px;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.6);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
   margin-top: 20px;
   position: relative;
   animation: fadeIn 0.4s ease-in-out;
@@ -338,14 +431,15 @@ body {
 
 #car360 {
   width: 100%;
-  max-width: 1200px;   /* largest on desktop */
+  max-width: 1200px;
+  /* largest on desktop */
   aspect-ratio: 16 / 9;
   height: auto;
   margin: auto;
   border-radius: 12px;
   overflow: hidden;
   background: #111;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
   position: relative;
 }
 
@@ -362,8 +456,10 @@ body {
 
 /* Hint styling */
 .rotation-hint {
-  position: absolute; /* now relative to #car360 */
-  bottom: 100px;       /* place inside the viewer */
+  position: absolute;
+  /* now relative to #car360 */
+  bottom: 100px;
+  /* place inside the viewer */
   left: 50%;
   transform: translateX(-50%);
   color: #fff;
@@ -372,11 +468,11 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
-  background: rgba(0,0,0,0.65);
+  background: rgba(0, 0, 0, 0.65);
   padding: 6px 14px;
   border-radius: 25px;
   pointer-events: none;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
 .rotation-hint .arrow {
@@ -399,17 +495,24 @@ body {
   align-items: center;
   gap: 10px;
   font-size: 15px;
-  box-shadow: 0 5px 18px rgba(255,0,0,0.35);
+  box-shadow: 0 5px 18px rgba(255, 0, 0, 0.35);
 }
 
 #backToPhotosBtn:hover {
   background: linear-gradient(135deg, #e62e2e, #a80000);
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(255,0,0,0.4);
+  box-shadow: 0 8px 25px rgba(255, 0, 0, 0.4);
 }
 
 /* Smooth fade animation */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
