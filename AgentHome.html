@@ -105,7 +105,7 @@
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    // ====== FIREBASE CONFIG ======
+    // Firebase Config
     const firebaseConfig = {
       apiKey: "AIzaSyD882u-zk7FB3YMwL0Nm3_VYD4xsCMt6cQ",
       authDomain: "carlisting-f88f2.firebaseapp.com",
@@ -122,7 +122,7 @@
 
     let allAppointments = [];
 
-    // ====== INIT CALENDAR ======
+    // Calender
     function initCalendar(events) {
       const calendarEl = document.getElementById("calendar");
       const calendar = new FullCalendar.Calendar(calendarEl, {
@@ -132,7 +132,7 @@
       calendar.render();
     }
 
-    // ====== FETCH APPOINTMENTS ======
+    // Fetch Appointment
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         document.getElementById("welcomeTitle").textContent = `Welcome Back, ${user.email}`;
@@ -216,7 +216,7 @@
       }
     });
 
-    // ====== LOGOUT HANDLER ======
+    // Log out handler
     const logoutBtn = document.getElementById("logoutBtn");
     if (logoutBtn) {
       logoutBtn.addEventListener("click", async (e) => {
@@ -232,7 +232,7 @@
           allAppointments = [];
 
           // Redirect
-          window.location.href = "Login.html"; // or Homepage.html
+          window.location.href = "Login.html"; 
         } catch (err) {
           console.error("Logout failed:", err);
         }

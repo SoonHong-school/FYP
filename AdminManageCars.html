@@ -8,7 +8,6 @@
   <link rel="stylesheet" href="assets/css/AdminManageCar.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-  <!-- Prevent UI flashing (important!) -->
   <style>
     body {
       opacity: 0;
@@ -194,9 +193,7 @@
     const db = getFirestore(app);
     const auth = getAuth(app);
 
-    /* ==========================================================
-        🔐 ADMIN-ONLY SECURITY CHECK (IMPORTANT)
-    ========================================================== */
+    // admin authorized
     onAuthStateChanged(auth, async (user) => {
       if (!user) {
         window.location.href = "Login.html";
@@ -212,22 +209,20 @@
         return;
       }
 
-      document.body.style.opacity = "1"; // allow page to appear
+      document.body.style.opacity = "1"; 
     });
-
-    /* ===============================
-        ORIGINAL PAGE FUNCTIONS BELOW
-    =============================== */
-
+    // Cloudinary configuration for image uploads
     const cloudName = "dwxsc3aec";
     const uploadPreset = "unsigned_preset";
-
+    
+    // DOM references
     const carsTable = document.getElementById("carsTable").querySelector("tbody");
     const editModal = document.getElementById("editModal");
     const searchInput = document.getElementById("searchInput");
 
-    let allCars = [];
-
+    let allCars = []; // Array to store all cars from Firestore
+    
+    // Load all cars
     async function loadCars() {
       const snap = await getDocs(collection(db, "cars"));
       allCars = [];
@@ -238,6 +233,7 @@
       renderCars(allCars);
     }
 
+    // Render cars in the HTML table
     function renderCars(cars) {
       carsTable.innerHTML = "";
       if (cars.length === 0) {
@@ -261,7 +257,8 @@
         carsTable.appendChild(tr);
       });
     }
-
+    
+    // Filter cars based on search input
     searchInput.addEventListener("input", () => {
       const query = searchInput.value.trim().toLowerCase();
       if (query === "") return renderCars(allCars);
@@ -272,7 +269,8 @@
       );
       renderCars(filtered);
     });
-
+    
+    // Open the edit modal and populate with car data
     window.openEditModal = async (carId) => {
       const carRef = doc(db, "cars", carId);
       const carSnap = await getDoc(carRef);
@@ -294,12 +292,13 @@
       document.getElementById("editCarEngine").value = car.engine;
       document.getElementById("editCarDimension").value = car.dimension;
       document.getElementById("editCarSafety").value = car.safety;
-
+      //display exterior images
       const exteriorDiv = document.getElementById("currentExteriorImages");
       exteriorDiv.innerHTML = car.images?.length
         ? car.images.map(url => `<img src="${url}">`).join("")
         : "<p>No exterior images</p>";
 
+      //display interior images
       const interiorDiv = document.getElementById("currentInteriorImages");
       interiorDiv.innerHTML = car.interiorImages?.length
         ? car.interiorImages.map(url => `<img src="${url}">`).join("")
@@ -309,14 +308,16 @@
     };
 
     window.closeModal = () => editModal.style.display = "none";
-
+    
+    //delete car
     window.deleteCar = async (carId) => {
       if (confirm("Delete this car?")) {
         await deleteDoc(doc(db, "cars", carId));
         loadCars();
       }
     };
-
+    
+    //Upload images to Cloudinary
     async function uploadImagesToCloudinary(files) {
       const urls = [];
       for (const file of files) {
@@ -370,12 +371,12 @@
 
       await updateDoc(carRef, updatedData);
       closeModal();
-      loadCars();
+      loadCars(); //reload after done update
     });
 
     loadCars();
 
-    /* ===== Logout ===== */
+    //logout
     document.getElementById("logoutBtn").addEventListener("click", async () => {
       await signOut(auth);
       localStorage.clear();

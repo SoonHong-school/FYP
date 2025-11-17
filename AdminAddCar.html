@@ -139,11 +139,13 @@
             <label for="brochurePdf">Upload Brochure PDF</label>
             <input type="file" id="brochurePdf" accept="application/pdf">
 
+
+            <!-- Exterior Upload Section -->
             <label for="carImages">Upload Car Images (max 30)</label>
             <input type="file" id="carImages" accept="image/*" multiple required>
             <div id="imagePreview" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;"></div>
 
-            <!-- NEW Interior Upload Section -->
+            <!-- Interior Upload Section -->
             <label for="interiorImages">Upload Interior Photos (max 20)</label>
             <input type="file" id="interiorImages" accept="image/*" multiple>
             <div id="interiorPreview" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;"></div>
@@ -177,7 +179,7 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        //🔐 ADMIN-ONLY SECURITY CHECK (IMPORTANT)
+        // authorized for admin only
 
         onAuthStateChanged(auth, async (user) => {
           if (!user) {
@@ -194,7 +196,7 @@
             return;
           }
 
-          document.body.style.opacity = "1"; // allow page to appear
+          document.body.style.opacity = "1"; 
         });
 
         const CLOUD_NAME = "dwxsc3aec";

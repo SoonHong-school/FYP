@@ -123,7 +123,7 @@
 
     let allCars = [];
 
-    // ✅ Get query params from homepage
+    // Get query params from homepage
     const params = new URLSearchParams(window.location.search);
     const paramBrand = params.get("brand") || "";
     const paramPrice = params.get("price") || "";
@@ -142,12 +142,12 @@
 
       populateFilterOptions(allCars);
 
-      // ✅ Pre-fill filters with query params
+      // Pre-fill filters with query params
       if (paramBrand) filterBrand.value = paramBrand;
       if (paramYear) filterYear.value = paramYear;
       if (paramPrice) maxPrice.value = paramPrice;
 
-      // ✅ Apply filters immediately
+      // Apply filters immediately
       applyFilters();
     }
 
@@ -179,7 +179,8 @@
         carGrid.appendChild(carCard);
       });
     }
-
+    
+    //Populate the filter dropdowns based on the available car data
     function populateFilterOptions(cars) {
       let brands = new Set();
       let models = new Set();
@@ -196,7 +197,9 @@
       filterYear.innerHTML = `<option value="">All</option>` + [...years].map(y => `<option value="${y}">${y}</option>`).join("");
     }
 
+    // Apply selected filters to the car list
     function applyFilters() {
+      // Filter the array of all cars based on the selected filter values
       let filtered = allCars.filter(car => {
         return (
           (!filterBrand.value || car.brand === filterBrand.value) &&

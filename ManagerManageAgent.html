@@ -9,7 +9,6 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    /* Minimal styles for the searchable dropdown */
     .searchable {
       position: relative;
       max-width: 520px;
@@ -150,7 +149,7 @@
     const db = getFirestore(app);
     const auth = getAuth(app);
 
-    // ====== MANAGER ROLE CHECK ======
+    // Manager role check
     onAuthStateChanged(auth, async (user) => {
       if (!user) {
         window.location.href = "Login.html";
@@ -166,7 +165,7 @@
         return;
       }
 
-      document.body.style.opacity = "1"; // fade-in page
+      document.body.style.opacity = "1"; 
       initPage();
     });
 
@@ -184,7 +183,7 @@
     const chartCanvas = document.getElementById("agentChart");
     const recentAppointments = document.getElementById("recentAppointments");
 
-    let agentsCache = []; // { id, name, email, label } loaded once
+    let agentsCache = []; 
     let filtered = [];
     let highlighted = -1;
     let debounceTimer = null;
@@ -412,9 +411,7 @@
     // initial agent load
     (async function init() {
       await loadAgents();
-      // optionally prefill with first agent or leave empty
-      // if you'd like to auto-select first agent uncomment below:
-      // if (agentsCache.length) selectAgentByObj(agentsCache[0]);
+
     })();
 
     // simple logout placeholder
@@ -424,7 +421,7 @@
       }
     };
 
-    // ====== LOGOUT HANDLER ======
+    // logout
     const logoutBtn = document.getElementById("logoutBtn");
     if (logoutBtn) {
       logoutBtn.addEventListener("click", async (e) => {
@@ -437,7 +434,7 @@
           sessionStorage.clear();
 
           // Redirect
-          window.location.href = "Login.html"; // or Homepage.html
+          window.location.href = "Login.html"; 
         } catch (err) {
           console.error("Logout failed:", err);
         }

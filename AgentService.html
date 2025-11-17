@@ -14,7 +14,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <script>
         (function () {
-            emailjs.init("mSpVdps_1ueQSCGZd"); // ✅ your Public Key
+            emailjs.init("mSpVdps_1ueQSCGZd"); 
         })();
     </script>
 </head>
@@ -114,7 +114,7 @@
 
         let allAppointments = [];
 
-        // ====== INIT CALENDAR ======
+        // Calender
         function initCalendar(events) {
             const calendarEl = document.getElementById("calendar");
             const calendar = new FullCalendar.Calendar(calendarEl, {
@@ -128,7 +128,7 @@
             calendar.render();
         }
 
-        // ====== SHOW APPOINTMENTS FOR SELECTED DATE ======
+        // show appointment for the selected date
         function showAppointmentsByDate(dateStr) {
             const tableBody = document.getElementById("appointmentsTableBody");
             const selectedDateTitle = document.getElementById("selectedDateTitle");
@@ -199,7 +199,7 @@
                         // Refresh history if moved to "done"
                         if (newStatus === "done") {
                             populateHistory();
-                            showAppointmentsByDate(dateStr); // refresh table to hide it
+                            showAppointmentsByDate(dateStr); 
                         }
                     } catch (err) {
                         console.error("Error updating status or sending email:", err);
@@ -211,14 +211,14 @@
             });
         }
 
-        // ====== POPULATE HISTORY ======
+        // populate history
         function populateHistory() {
             const historyBody = document.getElementById("historyTableBody");
             let historyAppointments = allAppointments.filter(app =>
                 app.status === "done" || app.status === "declined"
             );
 
-            // ✅ Sort by date + time (most recent first)
+            // Sort by date + time (most recent first)
             historyAppointments.sort((a, b) => {
                 const dateA = new Date(`${a.serviceDate}T${a.serviceTime}`);
                 const dateB = new Date(`${b.serviceDate}T${b.serviceTime}`);
@@ -256,7 +256,7 @@
 
 
 
-        // ====== AUTO UPDATE TO IN PROGRESS ======
+        // auto update to in progress
         function autoUpdateStatuses() {
             const now = new Date();
             allAppointments.forEach(async (app) => {
@@ -275,7 +275,7 @@
         }
         setInterval(autoUpdateStatuses, 60 * 1000);
 
-        // ====== FETCH APPOINTMENTS ======
+        // fetch appointments
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 const agentId = user.uid;
@@ -307,7 +307,7 @@
             }
         });
 
-        // ====== LOGOUT HANDLER ======
+        // logout
         const logoutBtn = document.getElementById("logoutBtn");
         if (logoutBtn) {
             logoutBtn.addEventListener("click", async (e) => {
@@ -323,7 +323,7 @@
                     allAppointments = [];
 
                     // Redirect
-                    window.location.href = "Login.html"; // or Homepage.html
+                    window.location.href = "Login.html"; 
                 } catch (err) {
                     console.error("Logout failed:", err);
                 }

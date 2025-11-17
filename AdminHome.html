@@ -130,7 +130,7 @@
         async function loadStats() {
           const carsSnap = await getDocs(collection(db, "cars"));
           let brands = new Set();
-          const carCounts = {}; // dynamic count by type
+          const carCounts = {}; 
 
           carsSnap.forEach(doc => {
             const car = doc.data();
@@ -181,7 +181,7 @@
       }
     });
 
-    // ====== LOGOUT HANDLER ======
+    // log out
     const logoutBtn = document.getElementById("logoutBtn");
     if (logoutBtn) {
       logoutBtn.addEventListener("click", async (e) => {
@@ -197,7 +197,7 @@
           allAppointments = [];
 
           // Redirect
-          window.location.href = "Login.html"; // or Homepage.html
+          window.location.href = "Login.html";
         } catch (err) {
           console.error("Logout failed:", err);
         }

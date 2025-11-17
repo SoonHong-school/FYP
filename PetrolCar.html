@@ -124,7 +124,7 @@
 
     let allCars = [];
 
-    // ✅ Get query params from homepage
+    // Get query params from homepage
     const params = new URLSearchParams(window.location.search);
     const paramBrand = params.get("brand") || "";
     const paramPrice = params.get("price") || "";
@@ -143,12 +143,12 @@
 
       populateFilterOptions(allCars);
 
-      // ✅ Pre-fill filters with query params
+      // Pre-fill filters with query params
       if (paramBrand) filterBrand.value = paramBrand;
       if (paramYear) filterYear.value = paramYear;
       if (paramPrice) maxPrice.value = paramPrice;
 
-      // ✅ Apply filters immediately
+      // Apply filters immediately
       applyFilters();
     }
 
@@ -182,7 +182,7 @@
     }
 
     function populateFilterOptions(cars) {
-      // Build brand → models mapping
+      // Build brand to models mapping
       const brandModelMap = {};
 
       cars.forEach(car => {
@@ -218,12 +218,12 @@
       // Initial model population
       updateModelOptions("");
 
-      // 🔁 Change model list dynamically when brand changes
+      // Change model list dynamically when brand changes
       filterBrand.addEventListener("change", () => {
         updateModelOptions(filterBrand.value);
       });
 
-      // Optional: repopulate year options
+      // repopulate year options
       const years = new Set(cars.map(c => c.year));
       filterYear.innerHTML = `<option value="">All</option>` + [...years].map(y => `<option value="${y}">${y}</option>`).join("");
     }

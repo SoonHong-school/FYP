@@ -5,7 +5,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Car Service Appointment | AutoCarMatch</title>
-  <!-- Page-specific styles -->
   <link rel="stylesheet" href="assets/css/CarService.css">
   <link rel="stylesheet" href="assets/css/Footer.css">
 </head>
@@ -89,7 +88,7 @@
       serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    // ====== FIREBASE CONFIG ======
+    // firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyD882u-zk7FB3YMwL0Nm3_VYD4xsCMt6cQ",
       authDomain: "carlisting-f88f2.firebaseapp.com",
@@ -109,7 +108,7 @@
     const serviceDateInput = document.getElementById("serviceDate");
     const serviceTimeSelect = document.getElementById("serviceTime");
 
-    // ====== PROTECT PAGE: REQUIRE LOGIN ======
+    // require login to access
     onAuthStateChanged(auth, async (user) => {
       if (!user) {
         window.location.href = "Login.html";
@@ -166,7 +165,7 @@
     });
 
 
-    // ====== SERVICE OPTIONS BASED ON CAR TYPE ======
+    // service option absed on car type
     const petrolServices = [
       { value: "maintenance", label: "General Maintenance" },
       { value: "oilChange", label: "Oil Change" },
@@ -181,10 +180,10 @@
       { value: "chargerRepair", label: "Charger Repair" }
     ];
 
-    // ====== SERVICE OPTIONS & AUTO-SUGGESTION BASED ON MILEAGE ======
+    // service suggetion based on milleague
     userCarSelect.addEventListener("change", async () => {
       serviceTypeSelect.innerHTML = '<option value="">-- Select Service Type --</option>';
-      document.querySelectorAll(".auto-msg").forEach(el => el.remove()); // remove old messages
+      document.querySelectorAll(".auto-msg").forEach(el => el.remove()); 
 
       if (!userCarSelect.value) return;
 
@@ -254,13 +253,13 @@
 
 
 
-    // ====== DATE RESTRICTIONS ======
+    // date restriction
     const today = new Date();
     today.setDate(today.getDate() + 1); // start from tomorrow
     const minDate = today.toISOString().split("T")[0];
     serviceDateInput.min = minDate;
 
-    // ====== TIME SLOTS ======
+    // time slot
     function generateTimeSlots() {
       serviceTimeSelect.innerHTML = '<option value="">-- Select Time Slot --</option>';
       for (let hour = 10; hour <= 18; hour++) {
@@ -273,7 +272,7 @@
     }
     generateTimeSlots();
 
-    // ====== FORM SUBMIT ======
+    // form submit
     document.getElementById("carServiceForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       const user = auth.currentUser;

@@ -45,7 +45,7 @@
       <label>Role</label>
       <input type="text" id="role" disabled />
 
-      <!-- ✅ New Type Dropdown -->
+      <!-- Type Dropdown -->
       <label>Type</label>
       <select id="typeSelect" required>
         <option value="">-- Select Type --</option>
@@ -68,7 +68,7 @@
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    // ====== FIREBASE CONFIG ======
+    // firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyD882u-zk7FB3YMwL0Nm3_VYD4xsCMt6cQ",
       authDomain: "carlisting-f88f2.firebaseapp.com",
@@ -83,11 +83,11 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // ====== CLOUDINARY CONFIG ======
+    // cloudinary config
     const CLOUD_NAME = "dwxsc3aec";
     const UPLOAD_PRESET = "unsigned_preset";
 
-    // ====== LOAD PROFILE ======
+    // load profile
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         const docRef = doc(db, "users", user.uid);
@@ -100,7 +100,7 @@
           document.getElementById("phoneNumber").value = data.phoneNumber || "";
           document.getElementById("role").value = data.role || "";
 
-          // ✅ Set selected type
+          // Set selected type
           if (data.type) {
             document.getElementById("typeSelect").value = data.type;
           }
@@ -115,7 +115,7 @@
       }
     });
 
-    // ====== SAVE CHANGES ======
+    // save changes
     document.getElementById("profileForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       const user = auth.currentUser;
@@ -144,7 +144,7 @@
       await updateDoc(docRef, {
         name: document.getElementById("name").value,
         phoneNumber: document.getElementById("phoneNumber").value,
-        type: typeValue, // ✅ store as "ev" or "petrol"
+        type: typeValue, // store as "ev" or "petrol"
         ...(profilePicUrl && { profilePic: profilePicUrl })
       });
 

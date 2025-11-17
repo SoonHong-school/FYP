@@ -109,7 +109,7 @@
     const db = getFirestore(app);
     const auth = getAuth(app);
 
-    // ====== ADMIN-ONLY SECURITY (MANAGER) ======
+    // Admin authorized access
     onAuthStateChanged(auth, async (user) => {
       if (!user) {
         window.location.href = "Login.html";
@@ -125,7 +125,7 @@
         return;
       }
 
-      document.body.style.opacity = "1"; // fade-in page
+      document.body.style.opacity = "1"; 
       initDashboard();
     });
 
@@ -141,6 +141,7 @@
       let approvedAgents = [];
       let chartInstance = null;
 
+      // Function to render an agent in the list with action buttons
       function renderAgent(docSnap, type) {
         const data = docSnap.data();
         return `
@@ -155,7 +156,8 @@
             </div>
           </li>`;
       }
-
+ 
+      // Function to update the doughnut chart showing pending vs approved agents
       function updateChart() {
         const data = {
           labels: ["Pending", "Approved"],
@@ -172,6 +174,7 @@
         });
       }
 
+      // Function to display agents in lists and attach button event listeners
       function displayAgents() {
         const search = searchInput.value.toLowerCase();
         pendingList.innerHTML = pendingAgents
@@ -201,6 +204,7 @@
         });
       }
 
+      // Function to open a modal displaying detailed agent information
       async function openModal(agentId) {
         const snap = pendingAgents.concat(approvedAgents).find(a => a.id === agentId);
         const d = snap.data();

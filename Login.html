@@ -95,13 +95,13 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // ====== NAVBAR LOAD ======
+    // navbar
     fetch("Navbar.html")
       .then(res => res.text())
       .then(data => {
         document.getElementById("navbar").innerHTML = data;
 
-        // ====== NAVBAR SCRIPT ======
+        // navbar script
         const hamburger = document.getElementById("hamburger");
         const navMenu = document.getElementById("nav-menu");
         hamburger.addEventListener("click", () => {
@@ -116,7 +116,7 @@
           });
         });
 
-        // ====== LOGIN STATE CHECK ======
+        // login state
         const isLoggedIn = localStorage.getItem("isLoggedIn");
         const userName = localStorage.getItem("userName");
 
@@ -133,17 +133,17 @@
         `;
           }
 
-          // Logout button event
+          // Logout button
           document.getElementById("logoutBtn").addEventListener("click", (e) => {
             e.preventDefault();
             localStorage.removeItem("isLoggedIn");
             localStorage.removeItem("userName");
-            window.location.href = "Homepage.html"; // reload homepage after logout
+            window.location.href = "Homepage.html"; 
           });
         }
       });
 
-    // ====== TAB SWITCH ======
+    // tab switch
     const loginTab = document.getElementById("loginTab");
     const registerTab = document.getElementById("registerTab");
     const loginForm = document.getElementById("loginForm");
@@ -163,7 +163,7 @@
       loginForm.classList.remove("active");
     });
 
-    // ====== LOGIN ======
+    // login
     document.getElementById("loginForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       const email = document.getElementById("loginEmail").value;
@@ -244,7 +244,7 @@
 
     });
 
-    // ====== REGISTER ======
+    // Register
     document.getElementById("registerForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       const name = document.getElementById("registerName").value;
@@ -302,7 +302,6 @@
           registerMessage.textContent = "📩 Verification email sent! Please check your inbox.";
           registerMessage.style.color = "blue";
 
-          // Optional: sign out after registration (so they must verify before login)
           await auth.signOut();
         }
 
@@ -315,7 +314,7 @@
       }
     });
 
-    // ====== FORGOT PASSWORD ======
+    // Forget Password
     document.getElementById("forgotPasswordLink").addEventListener("click", async (e) => {
       e.preventDefault();
       const email = document.getElementById("loginEmail").value.trim();

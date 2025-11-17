@@ -190,7 +190,7 @@
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
     import { loadNavbar } from "./assets/js/Navbar.js";
 
-    // ====== FIREBASE CONFIG ======
+    // Firebase Config
     const app = initializeApp({
       apiKey: "AIzaSyD882u-zk7FB3YMwL0Nm3_VYD4xsCMt6cQ",
       authDomain: "carlisting-f88f2.firebaseapp.com",
@@ -204,7 +204,7 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // ====== CLOUDINARY CONFIG ======
+    // Cloudinary Config
     const CLOUD_NAME = "dwxsc3aec";
     const UPLOAD_PRESET = "unsigned_preset";
 
@@ -214,7 +214,7 @@
 
     let currentUser = null;
 
-    // ====== PROFILE LOAD ======
+    // Profile Load
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         currentUser = user;
@@ -239,7 +239,7 @@
       }
     });
 
-    // ====== SAVE PROFILE WITH CLOUDINARY ======
+    // Save Profile with cloudinary
     document.getElementById("saveProfileBtn").addEventListener("click", async () => {
       if (!currentUser) return;
       const docRef = doc(db, "users", currentUser.uid);
@@ -269,7 +269,7 @@
       alert("✅ Profile updated successfully!");
     });
 
-    // ====== NAME UPDATE ======
+    // Update Name
     document.getElementById("updateNameBtn").addEventListener("click", async () => {
       if (!currentUser) return;
       const newName = document.getElementById("newName").value.trim();
@@ -287,7 +287,7 @@
       }
     });
 
-    // ====== PASSWORD RESET ======
+    // Password Reset
     document.getElementById("resetPasswordBtn").addEventListener("click", async () => {
       if (!currentUser?.email) {
         document.getElementById("resetMsg").textContent = "⚠️ No email found for this account.";
@@ -301,7 +301,7 @@
       }
     });
 
-    // ====== CAR LOGIC (unchanged) ======
+    // Car Logic
     const carTableBody = document.getElementById("carTableBody");
     const editModal = document.getElementById("editModal");
     const saveEditBtn = document.getElementById("saveEdit");
@@ -330,7 +330,7 @@
       }
     });
 
-    // ====== CAR BRANDS AND MODELS ======
+    // Car Brands and Model
     const carData = {
       Toyota: ["Corolla", "Camry", "Yaris", "Hilux", "Vios"],
       Honda: ["Civic", "Accord", "City", "CR-V", "HR-V"],
@@ -439,7 +439,7 @@
         carTableBody.appendChild(row);
       });
 
-      // Normal edit/delete listeners (only work for enabled buttons)
+      // Normal edit/delete listeners 
       document.querySelectorAll(".edit-btn:not([disabled])").forEach(btn => {
         btn.addEventListener("click", async () => {
           carToEdit = btn.dataset.id;
@@ -487,7 +487,7 @@
 
     showStep(currentStep);
 
-    // ====== LOAD SERVICE HISTORY ======
+    // Load service history
     async function loadUserServiceHistory(uid) {
       const serviceTableBody = document.getElementById("serviceTableBody");
       serviceTableBody.innerHTML = "<tr><td colspan='8' style='text-align:center;'>Loading...</td></tr>";
