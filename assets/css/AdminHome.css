@@ -8,6 +8,7 @@
 
 body {
   margin: 0;
+  transition: opacity 0.5s;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   background: url("../images/adminaddcarbackground.jpg") no-repeat center center fixed;
   background-size: cover;

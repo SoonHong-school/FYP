@@ -9,13 +9,21 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Hide content until role is verified -->
+  <style>
+    body {
+      opacity: 0;
+      transition: opacity 0.2s ease-in-out;
+    }
+  </style>
 </head>
 
 <body>
   <!-- Sidebar -->
   <aside class="sidebar">
     <div class="logo">
-      <a href="AdminHome.html">
+      <a href="ManagerHome.html">
         <img src="assets/images/logo.png" alt="AutoCarMatch Logo" style="height:50px;">
       </a>
     </div>
@@ -71,7 +79,6 @@
         <ul id="approvedList" class="agent-list"></ul>
       </section>
     </div>
-
   </main>
 
   <!-- Modal -->
@@ -85,10 +92,8 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getFirestore, collection, query, where, updateDoc, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getFirestore, collection, query, where, updateDoc, deleteDoc, doc, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { loadNavbar } from "./assets/js/Navbar.js";
-    import { loadFooter } from "./assets/js/Footer.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyD882u-zk7FB3YMwL0Nm3_VYD4xsCMt6cQ",
@@ -104,135 +109,141 @@
     const db = getFirestore(app);
     const auth = getAuth(app);
 
-    const pendingList = document.getElementById("pendingList");
-    const approvedList = document.getElementById("approvedList");
-    const pendingCount = document.getElementById("pendingCount");
-    const approvedCount = document.getElementById("approvedCount");
-    const searchInput = document.getElementById("searchInput");
-    const agentChart = document.getElementById("agentChart");
+    // ====== ADMIN-ONLY SECURITY (MANAGER) ======
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.href = "Login.html";
+        return;
+      }
 
-    let pendingAgents = [];
-    let approvedAgents = [];
-    let chartInstance = null;
+      const userRef = doc(db, "users", user.uid);
+      const snap = await getDoc(userRef);
 
-    function renderAgent(docSnap, type) {
-      const data = docSnap.data();
-      return `
-        <li>
-          <span>${data.name} (${data.email})</span>
-          <div>
-            ${type === "pending"
+      if (!snap.exists() || snap.data().role !== "manager") {
+        alert("Access denied. Manager only.");
+        window.location.href = "Login.html";
+        return;
+      }
+
+      document.body.style.opacity = "1"; // fade-in page
+      initDashboard();
+    });
+
+    function initDashboard() {
+      const pendingList = document.getElementById("pendingList");
+      const approvedList = document.getElementById("approvedList");
+      const pendingCount = document.getElementById("pendingCount");
+      const approvedCount = document.getElementById("approvedCount");
+      const searchInput = document.getElementById("searchInput");
+      const agentChart = document.getElementById("agentChart");
+
+      let pendingAgents = [];
+      let approvedAgents = [];
+      let chartInstance = null;
+
+      function renderAgent(docSnap, type) {
+        const data = docSnap.data();
+        return `
+          <li>
+            <span>${data.name} (${data.email})</span>
+            <div>
+              ${type === "pending"
           ? `<button class="approve-btn" data-id="${docSnap.id}">Approve</button>
-                 <button class="reject-btn" data-id="${docSnap.id}">Reject</button>`
+             <button class="reject-btn" data-id="${docSnap.id}">Reject</button>`
           : `<button class="view-btn" data-id="${docSnap.id}">View</button>
-                 <button class="reject-btn" data-id="${docSnap.id}">Remove</button>`}
-          </div>
-        </li>`;
-    }
+             <button class="reject-btn" data-id="${docSnap.id}">Remove</button>`}
+            </div>
+          </li>`;
+      }
 
-    function updateChart() {
-      const data = {
-        labels: ["Pending", "Approved"],
-        datasets: [{
-          data: [pendingAgents.length, approvedAgents.length],
-          backgroundColor: ["#f4c542", "#4caf50"]
-        }]
-      };
-      if (chartInstance) chartInstance.destroy();
-      chartInstance = new Chart(agentChart, {
-        type: "doughnut",
-        data,
-        options: {
-          responsive: true,
-          plugins: { legend: { position: "bottom", labels: { color: "#333" } } }
-        }
-      });
-    }
-
-    function displayAgents() {
-      const search = searchInput.value.toLowerCase();
-      pendingList.innerHTML = pendingAgents
-        .filter(a => a.data().name.toLowerCase().includes(search) || a.data().email.toLowerCase().includes(search))
-        .map(doc => renderAgent(doc, "pending")).join("");
-
-      approvedList.innerHTML = approvedAgents
-        .filter(a => a.data().name.toLowerCase().includes(search) || a.data().email.toLowerCase().includes(search))
-        .map(doc => renderAgent(doc, "approved")).join("");
-
-      // Event listeners
-      document.querySelectorAll(".approve-btn").forEach(btn => {
-        btn.addEventListener("click", async () => {
-          const id = btn.dataset.id;
-          await updateDoc(doc(db, "users", id), { role: "agent", approved: true, approvedAt: new Date() });
+      function updateChart() {
+        const data = {
+          labels: ["Pending", "Approved"],
+          datasets: [{
+            data: [pendingAgents.length, approvedAgents.length],
+            backgroundColor: ["#f4c542", "#4caf50"]
+          }]
+        };
+        if (chartInstance) chartInstance.destroy();
+        chartInstance = new Chart(agentChart, {
+          type: "doughnut",
+          data,
+          options: { responsive: true, plugins: { legend: { position: "bottom", labels: { color: "#333" } } } }
         });
-      });
+      }
 
-      document.querySelectorAll(".reject-btn").forEach(btn => {
-        btn.addEventListener("click", async () => {
-          const id = btn.dataset.id;
-          if (confirm("Remove this agent?")) await deleteDoc(doc(db, "users", id));
+      function displayAgents() {
+        const search = searchInput.value.toLowerCase();
+        pendingList.innerHTML = pendingAgents
+          .filter(a => a.data().name.toLowerCase().includes(search) || a.data().email.toLowerCase().includes(search))
+          .map(doc => renderAgent(doc, "pending")).join("");
+
+        approvedList.innerHTML = approvedAgents
+          .filter(a => a.data().name.toLowerCase().includes(search) || a.data().email.toLowerCase().includes(search))
+          .map(doc => renderAgent(doc, "approved")).join("");
+
+        document.querySelectorAll(".approve-btn").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            const id = btn.dataset.id;
+            await updateDoc(doc(db, "users", id), { role: "agent", approved: true, approvedAt: new Date() });
+          });
         });
+
+        document.querySelectorAll(".reject-btn").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            const id = btn.dataset.id;
+            if (confirm("Remove this agent?")) await deleteDoc(doc(db, "users", id));
+          });
+        });
+
+        document.querySelectorAll(".view-btn").forEach(btn => {
+          btn.addEventListener("click", () => openModal(btn.dataset.id));
+        });
+      }
+
+      async function openModal(agentId) {
+        const snap = pendingAgents.concat(approvedAgents).find(a => a.id === agentId);
+        const d = snap.data();
+        document.getElementById("agentInfo").innerHTML = `
+          <strong>Name:</strong> ${d.name}<br>
+          <strong>Email:</strong> ${d.email}<br>
+          ${d.phone ? `<strong>Phone:</strong> ${d.phone}<br>` : ""}
+          ${d.approvedAt ? `<strong>Approved At:</strong> ${new Date(d.approvedAt.toDate()).toLocaleString()}<br>` : ""}
+        `;
+        document.getElementById("viewModal").style.display = "flex";
+      }
+
+      window.closeModal = () => document.getElementById("viewModal").style.display = "none";
+
+      onSnapshot(query(collection(db, "users"), where("role", "==", "pending-agent")), (snapshot) => {
+        pendingAgents = snapshot.docs;
+        pendingCount.textContent = pendingAgents.length;
+        displayAgents();
+        updateChart();
       });
 
-      document.querySelectorAll(".view-btn").forEach(btn => {
-        btn.addEventListener("click", () => openModal(btn.dataset.id));
+      onSnapshot(query(collection(db, "users"), where("role", "==", "agent")), (snapshot) => {
+        approvedAgents = snapshot.docs;
+        approvedCount.textContent = approvedAgents.length;
+        displayAgents();
+        updateChart();
       });
-    }
 
-    async function openModal(agentId) {
-      const snap = pendingAgents.concat(approvedAgents).find(a => a.id === agentId);
-      const d = snap.data();
-      document.getElementById("agentInfo").innerHTML = `
-        <strong>Name:</strong> ${d.name}<br>
-        <strong>Email:</strong> ${d.email}<br>
-        ${d.phone ? `<strong>Phone:</strong> ${d.phone}<br>` : ""}
-        ${d.approvedAt ? `<strong>Approved At:</strong> ${new Date(d.approvedAt.toDate()).toLocaleString()}<br>` : ""}
-      `;
-      document.getElementById("viewModal").style.display = "flex";
-    }
+      searchInput.addEventListener("input", displayAgents);
 
-    window.closeModal = () => document.getElementById("viewModal").style.display = "none";
+      lucide.createIcons();
 
-    onSnapshot(query(collection(db, "users"), where("role", "==", "pending-agent")), (snapshot) => {
-      pendingAgents = snapshot.docs;
-      pendingCount.textContent = pendingAgents.length;
-      displayAgents();
-      updateChart();
-    });
-
-    onSnapshot(query(collection(db, "users"), where("role", "==", "agent")), (snapshot) => {
-      approvedAgents = snapshot.docs;
-      approvedCount.textContent = approvedAgents.length;
-      displayAgents();
-      updateChart();
-    });
-
-    searchInput.addEventListener("input", displayAgents);
-
-    loadNavbar();
-    loadFooter();
-    lucide.createIcons();
-
-    // ====== LOGOUT HANDLER ======
-    const logoutBtn = document.getElementById("logoutBtn");
-    if (logoutBtn) {
-      logoutBtn.addEventListener("click", async (e) => {
-        e.preventDefault();
-        try {
+      // Logout
+      const logoutBtn = document.getElementById("logoutBtn");
+      if (logoutBtn) {
+        logoutBtn.addEventListener("click", async () => {
           await signOut(auth);
-
-          // Clear local/session storage
           localStorage.clear();
           sessionStorage.clear();
-
-          // Redirect
-          window.location.href = "Login.html"; // or Homepage.html
-        } catch (err) {
-          console.error("Logout failed:", err);
-        }
-      });
+          window.location.href = "Login.html";
+        });
+      }
     }
   </script>
 </body>
-
 </html>

@@ -8,7 +8,13 @@
   <link rel="stylesheet" href="assets/css/AdminManageCar.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+  <!-- Prevent UI flashing (important!) -->
   <style>
+    body {
+      opacity: 0;
+      transition: opacity 0.2s ease-in-out;
+    }
+
     .search-container {
       margin-bottom: 20px;
       display: flex;
@@ -74,7 +80,6 @@
   <main class="main-content">
     <h2>Manage Cars</h2>
 
-    <!-- Search Bar -->
     <div class="search-container">
       <input type="text" id="searchInput" placeholder="Search by brand, model, or type...">
     </div>
@@ -99,7 +104,7 @@
     </table>
   </main>
 
-  <!-- Edit Car Modal -->
+  <!-- Edit Modal -->
   <div class="modal" id="editModal">
     <div class="modal-content">
       <h3>Edit Car</h3>
@@ -152,7 +157,6 @@
         <label>Safety</label>
         <input type="text" id="editCarSafety" required>
 
-
         <label>Exterior Images</label>
         <div id="currentExteriorImages" class="image-preview-container"></div>
         <input type="file" id="editCarImages" accept="image/*" multiple>
@@ -185,10 +189,35 @@
       messagingSenderId: "49221518207",
       appId: "1:49221518207:web:c5e2fd962b802322bfd04a"
     };
+
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth(app);
 
+    /* ==========================================================
+        🔐 ADMIN-ONLY SECURITY CHECK (IMPORTANT)
+    ========================================================== */
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.href = "Login.html";
+        return;
+      }
+
+      const ref = doc(db, "users", user.uid);
+      const snap = await getDoc(ref);
+
+      if (!snap.exists() || snap.data().role !== "admin") {
+        alert("Access denied. Admins only.");
+        window.location.href = "Login.html";
+        return;
+      }
+
+      document.body.style.opacity = "1"; // allow page to appear
+    });
+
+    /* ===============================
+        ORIGINAL PAGE FUNCTIONS BELOW
+    =============================== */
 
     const cloudName = "dwxsc3aec";
     const uploadPreset = "unsigned_preset";
@@ -218,7 +247,7 @@
       cars.forEach(car => {
         const tr = document.createElement("tr");
         tr.innerHTML = `
-          <td><img src="${car.images?.[0] || ''}" alt="Car Image" style="width:70px;height:auto;border-radius:6px;"></td>
+          <td><img src="${car.images?.[0] || ''}" style="width:70px;height:auto;border-radius:6px;"></td>
           <td>${car.type || ''}</td>
           <td>${car.brand || ''}</td>
           <td>${car.model || ''}</td>
@@ -251,6 +280,7 @@
       const car = carSnap.data();
 
       document.getElementById("editCarId").value = carId;
+
       document.getElementById("editCarType").value = car.type;
       document.getElementById("editCarBrand").value = car.brand;
       document.getElementById("editCarModel").value = car.model;
@@ -265,17 +295,14 @@
       document.getElementById("editCarDimension").value = car.dimension;
       document.getElementById("editCarSafety").value = car.safety;
 
-
-      // show current exterior images
       const exteriorDiv = document.getElementById("currentExteriorImages");
       exteriorDiv.innerHTML = car.images?.length
-        ? car.images.map(url => `<img src="${url}" alt="Car Exterior">`).join("")
+        ? car.images.map(url => `<img src="${url}">`).join("")
         : "<p>No exterior images</p>";
 
-      // show current interior images
       const interiorDiv = document.getElementById("currentInteriorImages");
       interiorDiv.innerHTML = car.interiorImages?.length
-        ? car.interiorImages.map(url => `<img src="${url}" alt="Car Interior">`).join("")
+        ? car.interiorImages.map(url => `<img src="${url}">`).join("")
         : "<p>No interior images</p>";
 
       editModal.style.display = "flex";
@@ -284,7 +311,7 @@
     window.closeModal = () => editModal.style.display = "none";
 
     window.deleteCar = async (carId) => {
-      if (confirm("Are you sure you want to delete this car?")) {
+      if (confirm("Delete this car?")) {
         await deleteDoc(doc(db, "cars", carId));
         loadCars();
       }
@@ -311,21 +338,17 @@
 
       const id = document.getElementById("editCarId").value;
       const carRef = doc(db, "cars", id);
+
       const imageFiles = document.getElementById("editCarImages").files;
       const interiorFiles = document.getElementById("editInteriorImages").files;
 
       let newImages = [];
       let newInterior = [];
 
-      if (imageFiles.length > 0) {
-        newImages = await uploadImagesToCloudinary(imageFiles);
-      }
+      if (imageFiles.length > 0) newImages = await uploadImagesToCloudinary(imageFiles);
+      if (interiorFiles.length > 0) newInterior = await uploadImagesToCloudinary(interiorFiles);
 
-      if (interiorFiles.length > 0) {
-        newInterior = await uploadImagesToCloudinary(interiorFiles);
-      }
-
-      const data = {
+      const updatedData = {
         type: document.getElementById("editCarType").value,
         brand: document.getElementById("editCarBrand").value,
         model: document.getElementById("editCarModel").value,
@@ -334,44 +357,31 @@
         transmission: document.getElementById("editCarTransmission").value,
         seats: parseInt(document.getElementById("editCarSeats").value),
         mileage: parseInt(document.getElementById("editCarMileage").value),
-        color: document.getElementById("editCarColor").value.trim(),
-        description: document.getElementById("editCarDescription").value.trim(),
-        updatedAt: serverTimestamp(),
-        engine: document.getElementById("editCarEngine").value.trim(),
-        dimension: document.getElementById("editCarDimension").value.trim(),
-        safety: document.getElementById("editCarSafety").value.trim(),
+        color: document.getElementById("editCarColor").value,
+        description: document.getElementById("editCarDescription").value,
+        engine: document.getElementById("editCarEngine").value,
+        dimension: document.getElementById("editCarDimension").value,
+        safety: document.getElementById("editCarSafety").value,
+        updatedAt: serverTimestamp()
       };
 
-      if (newImages.length > 0) data.images = newImages;
-      if (newInterior.length > 0) data.interiorImages = newInterior;
+      if (newImages.length > 0) updatedData.images = newImages;
+      if (newInterior.length > 0) updatedData.interiorImages = newInterior;
 
-      await updateDoc(carRef, data);
+      await updateDoc(carRef, updatedData);
       closeModal();
       loadCars();
     });
 
     loadCars();
 
-
-    // ====== LOGOUT HANDLER ======
-    const logoutBtn = document.getElementById("logoutBtn");
-    if (logoutBtn) {
-      logoutBtn.addEventListener("click", async (e) => {
-        e.preventDefault();
-        try {
-          await signOut(auth);
-
-          // Clear local/session storage
-          localStorage.clear();
-          sessionStorage.clear();
-
-          // Redirect to login
-          window.location.href = "Login.html";
-        } catch (err) {
-          console.error("Logout failed:", err);
-        }
-      });
-    }
+    /* ===== Logout ===== */
+    document.getElementById("logoutBtn").addEventListener("click", async () => {
+      await signOut(auth);
+      localStorage.clear();
+      sessionStorage.clear();
+      window.location.href = "Login.html";
+    });
 
   </script>
 </body>

@@ -177,6 +177,26 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
+        //🔐 ADMIN-ONLY SECURITY CHECK (IMPORTANT)
+
+        onAuthStateChanged(auth, async (user) => {
+          if (!user) {
+            window.location.href = "Login.html";
+            return;
+          }
+
+          const ref = doc(db, "users", user.uid);
+          const snap = await getDoc(ref);
+
+          if (!snap.exists() || snap.data().role !== "admin") {
+            alert("Access denied. Admins only.");
+            window.location.href = "Login.html";
+            return;
+          }
+
+          document.body.style.opacity = "1"; // allow page to appear
+        });
+
         const CLOUD_NAME = "dwxsc3aec";
         const UPLOAD_PRESET = "unsigned_preset";
 

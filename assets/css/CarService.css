@@ -138,6 +138,21 @@ body {
   background: #730000;
 }
 
+.agent-photo {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 10px;
+  border: 2px solid #ccc;
+  transition: transform 0.3s ease;
+}
+
+.agent-card:hover .agent-photo {
+  transform: scale(1.05);
+}
+
+
 
 /* Confirmation Popup Styling */
 .popup-overlay {

@@ -325,7 +325,7 @@
           bookedAgents.add(doc.data().agentId);
         });
 
-        // 3. Show available agents
+        // 3. Show available agents (with profile picture)
         agentsList.innerHTML = "";
         let availableCount = 0;
 
@@ -333,14 +333,20 @@
           const agent = doc.data();
           if (!bookedAgents.has(doc.id)) {
             availableCount++;
+
+            const profilePic =
+              agent.profilePic ||
+              "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"; // default avatar
+
             const div = document.createElement("div");
             div.className = "agent-card";
             div.innerHTML = `
-              <h3>${agent.name || "Unnamed Agent"}</h3>
-              <p><strong>Specialty:</strong> ${agent.specialty || "General Service"}</p>
-              <p><strong>Type:</strong> ${agent.type.toUpperCase()}</p>
-              <button class="book-btn">Book with ${agent.name || "Agent"}</button>
-            `;
+      <img src="${profilePic}" alt="${agent.name || "Agent"}" class="agent-photo">
+      <h3>${agent.name || "Unnamed Agent"}</h3>
+      <p><strong>Specialty:</strong> ${agent.specialty || "General Service"}</p>
+      <p><strong>Type:</strong> ${agent.type?.toUpperCase() || "N/A"}</p>
+      <button class="book-btn">Book with ${agent.name || "Agent"}</button>
+    `;
 
             div.querySelector(".book-btn").addEventListener("click", async () => {
               try {
@@ -360,13 +366,13 @@
                   createdAt: serverTimestamp(),
                   status: "pending"
                 });
-                // Show custom confirmation popup
+                // Show confirmation popup
                 const popup = document.getElementById("confirmationPopup");
                 popup.style.display = "flex";
 
                 document.getElementById("confirmOkBtn").onclick = () => {
                   popup.style.display = "none";
-                  window.location.href = "UserProfile.html"; 
+                  window.location.href = "UserProfile.html";
                 };
 
               } catch (err) {
@@ -378,6 +384,7 @@
             agentsList.appendChild(div);
           }
         });
+
 
         if (availableCount === 0) {
           serviceMessage.textContent = "❌ No agents available at this time.";
