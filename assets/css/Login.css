@@ -73,6 +73,26 @@ body {
   display: block;
 }
 
+.password-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.password-wrapper input {
+  width: 100%;
+  padding-right: 40px;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  font-size: 18px;
+  user-select: none;
+}
+
 
 .form {
   display: none;
@@ -171,3 +191,5 @@ body {
   text-align: center;
   color: #444;
 }
+
+

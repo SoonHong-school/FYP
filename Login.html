@@ -26,7 +26,11 @@
       <form id="loginForm" class="form active">
         <h2>Login</h2>
         <input type="email" id="loginEmail" placeholder="Email" required>
-        <input type="password" id="loginPassword" placeholder="Password" required>
+        <div class="password-wrapper">
+          <input type="password" id="loginPassword" placeholder="Password" required>
+          <span class="toggle-password" data-target="loginPassword">👁️</span>
+        </div>
+
         <button type="submit">Login</button>
 
         <a href="#" id="forgotPasswordLink" class="forgot-link">Forgot Password?</a>
@@ -39,11 +43,17 @@
         <h2>Create Account</h2>
         <input type="text" id="registerName" placeholder="Full Name" required>
         <input type="email" id="registerEmail" placeholder="Email" required>
-        <input type="password" id="registerPassword" placeholder="Password" required>
+        <div class="password-wrapper">
+          <input type="password" id="registerPassword" placeholder="Password" required>
+          <span class="toggle-password" data-target="registerPassword">👁️</span>
+        </div>
         <small class="password-note">
           Password must be at least 8 characters long and include both letters and numbers.
         </small>
-        <input type="password" id="registerConfirmPassword" placeholder="Confirm Password" required>
+        <div class="password-wrapper">
+          <input type="password" id="registerConfirmPassword" placeholder="Confirm Password" required>
+          <span class="toggle-password" data-target="registerConfirmPassword">👁️</span>
+        </div>
         <!-- Role Selector -->
         <label for="registerRole">Register as:</label>
         <select id="registerRole" required>
@@ -138,7 +148,7 @@
             e.preventDefault();
             localStorage.removeItem("isLoggedIn");
             localStorage.removeItem("userName");
-            window.location.href = "Homepage.html"; 
+            window.location.href = "Homepage.html";
           });
         }
       });
@@ -163,6 +173,23 @@
       loginForm.classList.remove("active");
     });
 
+    // Show / Hide Password
+    document.querySelectorAll(".toggle-password").forEach(icon => {
+      icon.addEventListener("click", () => {
+        const targetId = icon.getAttribute("data-target");
+        const passwordField = document.getElementById(targetId);
+
+        if (passwordField.type === "password") {
+          passwordField.type = "text";
+          icon.textContent = "🙈";  // hide icon
+        } else {
+          passwordField.type = "password";
+          icon.textContent = "👁️"; // show icon
+        }
+      });
+    });
+
+
     // login
     document.getElementById("loginForm").addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -179,14 +206,14 @@
         if (!userCred.user.emailVerified) {
           loginMessage.textContent = "⚠️ Please verify your email before logging in.";
           loginMessage.style.color = "orange";
-          await auth.signOut(); 
+          await auth.signOut();
           return;
         }
 
 
         // Get role from Firestore
         const userDoc = await getDoc(doc(db, "users", userCred.user.uid));
-        let role = "user"; 
+        let role = "user";
         if (userDoc.exists()) {
           role = userDoc.data().role || "user";
         }
@@ -215,7 +242,7 @@
 
         setTimeout(() => {
           if (role === "admin") {
-            window.location.href = "AdminHome.html";   
+            window.location.href = "AdminHome.html";
           } else if (role === "manager") {
             window.location.href = "ManagerHome.html";
           } else if (role === "agent") {
